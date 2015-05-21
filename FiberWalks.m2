@@ -1,9 +1,11 @@
 newPackage("FiberWalks",
 	Version => "0.1",
 	Date => "May 2015",
-	Authors => {{
-			Name => "Tobias Windisch",
-			Email => "windisch@ovgu.de"}},
+	Authors => {
+     {Name => "Tobias Windisch",
+      Email => "windisch@ovgu.de",
+      HomePage => "http://www.uni-magdeburg.de/windisch/"}},
+   Headline => "Package for analysing fiber graphs",
 	Configuration => {},
    PackageImports => {"Graphs","Polyhedra"},
 	Reload=>true
@@ -31,10 +33,14 @@ export {
 --variable for polynomial ring
 xx:=vars(23);
 
---TODO: Move this function into Graphs.m2
+--TODOs: 
+--Move method expansion to Graphs.m2
+--Write documentation
+--Implement checks
+
 expansion = method (Options => {ReturnSet => false,Verbose=>false})
 expansion Graph := ZZ => opts -> G -> (
-V:=set(vertices(G));
+V:=set(vertexSet(G));
 E:=edges(G);
 n:=floor((#V)/2);
 --CS:={};
@@ -55,7 +61,7 @@ if opts.ReturnSet then return (ee,RS) else return ee;
 
 expand = method ()
 expand (Graph,Set) := QQ => (G,S) -> (
-CS:=set(vertices(G))-S;
+CS:=set(vertexSet(G))-S;
 return (sum for e in edges(G) list if #(e*S)>0 and #(e*CS)>0 then 1 else 0)/#S;
 );
 
@@ -143,7 +149,6 @@ for i in 0..n-1 do (
     );
 return matrix P;
 );
-
 
 metropolisHastingsWalk = method()
 metropolisHastingsWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(metropolisHastingsWalk(getFiberGraph(A,b,M)));
