@@ -18,7 +18,6 @@ export {
     getFiberGraph,
     getHemmeckeMatrix,
     adaptedMoves,
-    expand,
 
     --transistion matrices
     simpleFiberWalk,
@@ -42,6 +41,9 @@ expansion = method (Options => {ReturnSet => false,Verbose=>false})
 expansion Graph := ZZ => opts -> G -> (
 V:=set(vertexSet(G));
 E:=edges(G);
+--return 0 if graph is empty graph
+if #E==0 then return 0;
+
 n:=floor((#V)/2);
 --CS:={};
 RS:={};
@@ -58,12 +60,6 @@ for i in 1..n do (
         );
     );
 if opts.ReturnSet then return (ee,RS) else return ee;
-);
-
-expand = method ()
-expand (Graph,Set) := QQ => (G,S) -> (
-CS:=set(vertexSet(G))-S;
-return (sum for e in edges(G) list if #(e*S)>0 and #(e*CS)>0 then 1 else 0)/#S;
 );
 
 adaptedMoves = method()
@@ -176,3 +172,15 @@ slem = method()
 slem (Matrix) := RR => (P) -> ( 
 return (rsort unique for v in eigenvalues P list abs v)_1;
 );
+
+
+
+-- Tests --
+
+TEST ///
+--test expansion of graphs
+G=graph({{1,2},{2,3},{3,1}});
+assert(expansion(G)===2);
+///
+
+end
