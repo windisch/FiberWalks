@@ -51,8 +51,9 @@ ee:=degree(G,(toList(V))_0);
 for i in 1..n do (
     if opts.Verbose then << i << "/" << n << endl;
     for S in subsets(V,i) do (
-        qq:=expand(G,S);
-        ee=min(ee,qq);
+        CS:=V-S;
+        qq:=sum for e in edges(G) list if #(e*S)>0 and #(e*CS)>0 then 1 else 0;
+        ee=min(ee,qq/#S);
         if(ee == qq) then RS=S;
         );
     );
