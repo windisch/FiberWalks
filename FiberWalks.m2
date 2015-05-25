@@ -42,7 +42,7 @@ expansion Graph := ZZ => opts -> G -> (
 V:=set(vertexSet(G));
 E:=edges(G);
 --return 0 if graph is empty graph
-if #E==0 then return 0;
+if #E===0 then return 0;
 
 n:=floor((#V)/2);
 --CS:={};
@@ -181,6 +181,12 @@ TEST ///
 --test expansion of graphs
 G=graph({{1,2},{2,3},{3,1}});
 assert(expansion(G)===2);
+///
+
+TEST ///
+--expansion of empty graph
+G=graph();
+assert(expansion(G)===0);
 ///
 
 end
