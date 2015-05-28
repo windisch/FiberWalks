@@ -38,8 +38,8 @@ xx:=vars(23);
 --Move method expansion to Graphs.m2
 --Write documentation
 --Implement checks
---make directed fiber graphs
 --make final distribution an argument in metropolisHastingsWalk
+--make new type: FiberGraph
 
 expansion = method (Options => {ReturnSet => false,Verbose=>false})
 expansion Graph := ZZ => opts -> G -> (
@@ -159,7 +159,7 @@ return matrix P;
 );
 
 simpleWalk = method()
-simpleWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleWalk(fiberGraph(A,b,M)));
+--simpleWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleWalk(fiberGraph(A,b,M)));
 simpleWalk (Graph) := Matrix => (G) -> (
 n:=#(vertexSet G);
 P:=mutableMatrix(adjacencyMatrix(G)**QQ);
@@ -171,7 +171,7 @@ return matrix P;
 );
 
 metropolisHastingsWalk = method()
-metropolisHastingsWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(metropolisHastingsWalk(fiberGraph(A,b,M)));
+--metropolisHastingsWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(metropolisHastingsWalk(fiberGraph(A,b,M)));
 metropolisHastingsWalk (Graph) := Matrix => (G) -> (
 n:=#(vertexSet G);
 A:=adjacencyMatrix(G);
@@ -239,8 +239,7 @@ document {
      Inputs => {
           "A" => { "a Matrix"},
           "b" => { "a Matrix"},
-          "M" => { "a Matrix or a List"},
-          },
+          "M" => { "a Matrix or a List"}},
      Outputs => {
           {"the (directed) fiber graph of A with right-hand side b and allowed
           moves M"} },
@@ -256,10 +255,58 @@ document {
           },
      SeeAlso => fiber}
 
+document {
+     Key => {simpleWalk,
+     (simpleWalk,Graph)},
+     Headline => "The simple walk",
+     Usage => "simpleWalk(G)",
+     Inputs => {
+          "G" => { "a Graph"}},
+     Outputs => {
+          {"the transition matrix of the simple walk on G"} },
+     EXAMPLE {
+          "needsPackage(\"Graphs\")",
+          "G=graph({{1,2},{2,3},{3,1}})",
+          "simpleWalk(G)"
+          },
+     SeeAlso => {simpleFiberWalk,metropolisHastingsWalk}}
 
+document {
+     Key => {metropolisHastingsWalk,
+     (metropolisHastingsWalk,Graph)},
+     Headline => "The Metropolis-Hastings walk",
+     Usage => "metropolisHastingsWalk(G)",
+     Inputs => {
+          "G" => { "a Graph"}},
+     Outputs => {
+          {"the transition matrix of the Metropolis-Hastings walk on G
+          with uniform as stationary distribution"} },
+     EXAMPLE {
+          "needsPackage(\"Graphs\")",
+          "G=graph({{1,2},{2,3},{3,1},{3,4}})",
+          "metropolisHastingsWalk(G)"
+          },
+     SeeAlso => {simpleFiberWalk,simpleWalk}}
 
-
-
+document {
+     Key => {simpleFiberWalk,
+     (simpleFiberWalk,Matrix,Matrix,Matrix),(simpleFiberWalk,Matrix,Matrix,List)},
+     Headline => "The simple walk",
+     Usage => "simpleFiberWalk(A,b,M)",
+     Inputs => {
+          "A" => { "a Matrix"},
+          "b" => { "a Matrix"},
+          "M" => { "a Matrix or a List"}},
+     Outputs => {
+          {"the transition matrix of the simple fiber walk on the
+          fiber graph of A with right-hand side b and allowed moves M"} },
+     EXAMPLE {
+          "A=matrix({{1,1,1,1}})",
+          "b=matrix({{2}})",
+          "M=toricMarkov(A)",
+          "simpleFiberWalk(A,b,M)"
+          },
+     SeeAlso => {simpleWalk,metropolisHastingsWalk}}
 
 -- Tests --
 
