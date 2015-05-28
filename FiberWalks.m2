@@ -108,6 +108,7 @@ return graph(matrix AA);
 
 getHemmeckeMatrix = method ()
 getHemmeckeMatrix (ZZ) := Matrix => (k) -> (
+if k==0 then return matrix({{0}});
 I:=map(ZZ^k);
 O:=reshape(ZZ^k,ZZ^k,matrix 0_(ZZ^(k*k)));
 i:=matrix toList(k:{-1});
