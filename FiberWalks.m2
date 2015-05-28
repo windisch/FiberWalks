@@ -26,7 +26,9 @@ export {
     slem,
 
     --options
-    ReturnSet
+    ReturnSet,
+    Directed,
+    TermOrder
 }
 
 --variable for polynomial ring
@@ -37,6 +39,7 @@ xx:=vars(23);
 --Write documentation
 --Implement checks
 --make directed fiber graphs
+--make final distribution an argument in metropolisHastingsWalk
 
 expansion = method (Options => {ReturnSet => false,Verbose=>false})
 expansion Graph := ZZ => opts -> G -> (
@@ -93,18 +96,35 @@ LP:=latticePoints P;
 return LP;
 );
 
-fiberGraph = method ()
-fiberGraph (Matrix,Matrix,Matrix) := List => (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m));
-fiberGraph (Matrix,Matrix,List) := Graph => (A,b,M) -> (fiberGraph(fiber(A,b),M));
-fiberGraph (List,List) := Graph => (F,M) -> (
+fiberGraph = method (Options => {Directed => false,TermOrder=>Lex})
+fiberGraph (Matrix,Matrix,Matrix) := List => opts -> (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m,opts));
+fiberGraph (Matrix,Matrix,List) := Graph => opts -> (A,b,M) -> (fiberGraph(fiber(A,b),M,opts));
+fiberGraph (List,Matrix) := Graph => opts -> (F,M) -> (fiberGraph(F,for m in entries M list matrix vector m,opts));
+fiberGraph (List,List) := Graph => opts -> (F,M) -> (
 n:=#F;
 ee:={};
-for e in subsets(F,2) do (
-   if member(e_0-e_1,M) or member (e_1-e_0,M) then (
-      ee=ee|{e}; 
-   ); 
-);
-return graph(ee);
+if opts.Directed then (
+   if n==0 then return digraph({});
+   d:=numRows(F_0);
+   R:=QQ[vars(0..(d-1)),MonomialOrder=>opts.TermOrder];
+   for e in subsets(F,2) do (
+      if member(e_0-e_1,M) or member (e_1-e_0,M) then (
+         v1:=flatten entries e_0;
+         v2:=flatten entries e_1;
+         m1:=product(for i in 0..(d-1) list ((R_i)^(v1_i))_R);
+         m2:=product(for i in 0..(d-1) list ((R_i)^(v2_i))_R);
+         if (m1)_R>(m2)_R then ee=ee|{{e_0,e_1}} else ee=ee|{{e_1,e_0}};
+         ); 
+      );
+      return digraph(ee);
+   ) else (
+   for e in subsets(F,2) do (
+      if member(e_0-e_1,M) or member (e_1-e_0,M) then (
+         ee=ee|{e}; 
+         );
+      ); 
+      return graph(ee);
+   );
 );
 
 getHemmeckeMatrix = method ()
@@ -117,7 +137,6 @@ o:=matrix toList(k:{0});
 ll:=matrix({toList((4*k):0)|{1,1}});
 A:=(I|I|O|O|i|o)||(O|O|I|I|o|i)||ll;
 return A;
-
 );
 
 ----------------------------------
@@ -212,7 +231,7 @@ document {
 
 document {
      Key => {fiberGraph,
-     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,List,List)},
+     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,List,Matrix),(fiberGraph,List,List)},
      Headline => "Fiber graph of a matrix",
      Usage => "fiberGraph(A,b,M)",
      Inputs => {
@@ -220,7 +239,6 @@ document {
           "b" => { "a Matrix"},
           "M" => { "a Matrix or a List"},
           },
-
      Outputs => {
           {"the fiber graph of A with right-hand side b and allowed
           moves M"} },
@@ -229,7 +247,9 @@ document {
           "A=matrix({{1,0,-2},{1,1,1}})",
           "b=matrix({{2},{10}})",
           "M=toricMarkov(A)",
-          "fiberGraph(A,b,M)"
+          "fiberGraph(A,b,M);",
+          "F=fiber(A,b)",
+          "fiberGraph(F,M);"
           },
      SeeAlso => fiber}
 
