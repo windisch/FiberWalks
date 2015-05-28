@@ -308,6 +308,22 @@ document {
           },
      SeeAlso => {simpleWalk,metropolisHastingsWalk}}
 
+document {
+     Key => {expansion,
+     (expansion,Graph)},
+     Headline => "Edge expansion or Cheeger constant",
+     Usage => "expansion(G)",
+     Inputs => {
+          "G" => { "a Graph"}},
+     Outputs => {
+          {"the edge expansion (also known as Cheeger constant or
+          isoperimetric number) of G"} },
+     EXAMPLE {
+          "needsPackage(\"Graphs\")",
+          "G=graph({{1,2},{2,3},{3,1},{3,4}})",
+          "expansion(G)"
+          }}
+
 -- Tests --
 
 TEST ///
