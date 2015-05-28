@@ -17,7 +17,6 @@ export {
     FiberGraph,
 
     --fiber graphs
-    expansion,
     fiber,
     fiberGraph,
     getHemmeckeMatrix,
@@ -40,37 +39,11 @@ export {
 xx:=vars(23);
 
 --TODOs: 
---Move method expansion to Graphs.m2
 --make final distribution an argument in metropolisHastingsWalk
 --make new type: FiberGraph
 
 Fiber = new Type of List
 FiberGraph = new Type of Graph
-
-expansion = method (Options => {ReturnSet => false,Verbose=>false})
-expansion Graph := QQ => opts -> G -> (
-V:=set(vertexSet(G));
-E:=edges(G);
---return 0 if graph is empty graph
-if #E===0 then return 0;
-
-n:=floor((#V)/2);
---CS:={};
-RS:={};
-qq:=0;
-ee:=degree(G,(toList(V))_0);
-
-for i in 1..n do (
-    if opts.Verbose then << i << "/" << n << endl;
-    for S in subsets(V,i) do (
-        CS:=V-S;
-        qq:=sum for e in edges(G) list if #(e*S)>0 and #(e*CS)>0 then 1 else 0;
-        ee=min(ee,qq/#S);
-        if(ee == qq) then RS=S;
-        );
-    );
-if opts.ReturnSet then return (ee,RS) else return ee;
-);
 
 adaptedMoves = method()
 adaptedMoves (Matrix,ZZ) := List => (M,r) -> (adaptedMoves(for m in entries M list matrix vector m,r));
@@ -318,23 +291,6 @@ document {
      SeeAlso => {simpleWalk,metropolisHastingsWalk}}
 
 document {
-     Key => {expansion,
-     (expansion,Graph)},
-     Headline => "Edge expansion or Cheeger constant",
-     Usage => "expansion(G)",
-     Inputs => {
-          "G" => { "a Graph"}},
-     Outputs => {
-          {"the edge expansion (also known as Cheeger constant or
-          isoperimetric number) of G"} },
-     EXAMPLE {
-          "needsPackage(\"Graphs\")",
-          "G=graph({{1,2},{2,3},{3,1},{3,4}})",
-          "expansion(G)",
-          "expansion completeGraph(10)"
-          }}
-
-document {
      Key => {slem,
      (slem,Matrix)},
      Headline => "Second largest eigenvalue modulus",
@@ -369,18 +325,6 @@ document {
           }}
 
 -- Tests --
-
-TEST ///
---test expansion of graphs
-G=pathGraph(7);
-assert(expansion(G)===1/3);
-///
-
-TEST ///
---expansion of empty graph
-G=graph({});
-assert(expansion(G)===0);
-///
 
 TEST ///
 --check creation of adapted moves
