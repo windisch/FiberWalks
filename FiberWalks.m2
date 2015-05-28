@@ -14,8 +14,8 @@ newPackage("FiberWalks",
 export {
     --fiber graphs
     expansion,
-    getFiber,
-    getFiberGraph,
+    fiber,
+    fiberGraph,
     getHemmeckeMatrix,
     adaptedMoves,
 
@@ -73,11 +73,11 @@ P:=latticePoints crossPolytope(d,r);
 return unique for p in P list M*p;
 );
 
-getFiber = method ()
-getFiber (Matrix,ZZ) := List => (A,b) -> (getFiber(A,toList{b}));
-getFiber (Matrix,List) := List => (A,b) -> (getFiber(A,vector b));
-getFiber (Matrix,Vector) := List => (A,b) -> (getFiber(A,matrix b));
-getFiber (Matrix,Matrix) := List => (A,b) -> (
+fiber = method ()
+fiber (Matrix,ZZ) := List => (A,b) -> (fiber(A,toList{b}));
+fiber (Matrix,List) := List => (A,b) -> (fiber(A,vector b));
+fiber (Matrix,Vector) := List => (A,b) -> (fiber(A,matrix b));
+fiber (Matrix,Matrix) := List => (A,b) -> (
 d:=numColumns A;
 if numRows(A)!=numRows(b) or numColumns(b)>1 then return false;
 --check whether fiber finite
@@ -93,10 +93,10 @@ LP:=latticePoints P;
 return LP;
 );
 
-getFiberGraph = method ()
-getFiberGraph (Matrix,Matrix,Matrix) := List => (A,b,M) -> (getFiberGraph(A,b,for m in entries M list matrix vector m));
-getFiberGraph (Matrix,Matrix,List) := Graph => (A,b,M) -> (getFiberGraph(getFiber(A,b),M));
-getFiberGraph (List,List) := Graph => (F,M) -> (
+fiberGraph = method ()
+fiberGraph (Matrix,Matrix,Matrix) := List => (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m));
+fiberGraph (Matrix,Matrix,List) := Graph => (A,b,M) -> (fiberGraph(fiber(A,b),M));
+fiberGraph (List,List) := Graph => (F,M) -> (
 n:=#F;
 if n==0 then return graph({});
 AA:=mutableMatrix(ZZ,n,n);
@@ -133,7 +133,7 @@ return A;
 simpleFiberWalk = method ()
 simpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleFiberWalk(A,b,for m in entries M list matrix vector m));
 simpleFiberWalk (Matrix,Matrix,List) := Matrix => (A,b,M) -> (
-P:=mutableMatrix(adjacencyMatrix(getFiberGraph(A,b,M))**QQ);
+P:=mutableMatrix(adjacencyMatrix(fiberGraph(A,b,M))**QQ);
 D:=#(set(M)+set(-M));
 for i in 0..numRows(P)-1 do (
    deg:=sum flatten entries P^{i};
@@ -144,7 +144,7 @@ return matrix P;
 );
 
 simpleWalk = method()
-simpleWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleWalk(getFiberGraph(A,b,M)));
+simpleWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleWalk(fiberGraph(A,b,M)));
 simpleWalk (Graph) := Matrix => (G) -> (
 n:=#(vertexSet G);
 P:=mutableMatrix(adjacencyMatrix(G)**QQ);
@@ -156,7 +156,7 @@ return matrix P;
 );
 
 metropolisHastingsWalk = method()
-metropolisHastingsWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(metropolisHastingsWalk(getFiberGraph(A,b,M)));
+metropolisHastingsWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(metropolisHastingsWalk(fiberGraph(A,b,M)));
 metropolisHastingsWalk (Graph) := Matrix => (G) -> (
 n:=#(vertexSet G);
 A:=adjacencyMatrix(G);
@@ -199,11 +199,11 @@ document {
      1998).\n"}}}
 
 document {
-     Key => {getFiber,
-     (getFiber,Matrix,ZZ),(getFiber,Matrix,List),(getFiber, Matrix,
-     Vector),(getFiber,Matrix,Matrix)},
+     Key => {fiber,
+     (fiber,Matrix,ZZ),(fiber,Matrix,List),(fiber, Matrix,
+     Vector),(fiber,Matrix,Matrix)},
      Headline => "Fiber of a matrix",
-     Usage => "getFiber(A,b)",
+     Usage => "fiber(A,b)",
      Inputs => {
           "A" => { "a Matrix"},
           "b" => { "an element in ZZ, a List, a Vector or a Matrix"}},
@@ -212,9 +212,9 @@ document {
      EXAMPLE {
           "A=matrix({{1,0,-2},{1,1,1}})",
           "b=matrix({{2},{10}})",
-          "F=getFiber(A,b)"
+          "F=fiber(A,b)"
           },
-     SeeAlso => getFiberGraph}
+     SeeAlso => fiberGraph}
 
 
 
@@ -254,17 +254,17 @@ matrix({{2},{1},{0}}),matrix({{1},{1},{1}}),
 matrix({{0},{1},{2}}),matrix({{1},{2},{0}}), 
 matrix({{0},{2},{1}}),matrix({{0},{3},{0}})}
 L={};
-L=L|{getFiber(A,3)};
-L=L|{getFiber(A,{3})};
-L=L|{getFiber(A,matrix({{3}}))};
-L=L|{getFiber(A,vector({3}))};
+L=L|{fiber(A,3)};
+L=L|{fiber(A,{3})};
+L=L|{fiber(A,matrix({{3}}))};
+L=L|{fiber(A,vector({3}))};
 assert(all(L,S->S==F));
 ///
 
 TEST ///
 --check infinite fibers 
 A=matrix({{1,-1}});
-assert(getFiber(A,1)===false);
+assert(fiber(A,1)===false);
 ///
 
 end
