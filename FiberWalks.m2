@@ -28,6 +28,7 @@ export {
     simpleWalk,
     metropolisHastingsWalk,
     slem,
+    mixingTime,
 
     --options
     ReturnSet,
@@ -201,6 +202,9 @@ slem (Matrix) := RR => (P) -> (
 return (rsort unique for v in eigenvalues P list abs v)_1;
 );
 
+mixingTime = method()
+mixingTime (Matrix) := RR => (P) -> (return -1/log(slem(P)););
+
 beginDocumentation()
 
 
@@ -345,6 +349,23 @@ document {
           "G=graph({{1,2},{2,3},{3,1},{3,4}})",
           "T=simpleWalk(G);",
           "slem(T)"
+          }}
+
+document {
+     Key => {mixingTime,
+     (mixingTime,Matrix)},
+     Headline => "Mixing time",
+     Usage => "mixingTime(T)",
+     Inputs => {
+          "T" => { "a Matrix"}},
+     Outputs => {
+          {"the mixing time of the random walk
+          corresponding to the transition matrix T"} },
+     EXAMPLE {
+          "needsPackage(\"Graphs\")",
+          "G=graph({{1,2},{2,3},{3,1},{3,4}})",
+          "T=simpleWalk(G);",
+          "mixingTime(T)"
           }}
 
 -- Tests --
