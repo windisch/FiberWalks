@@ -94,15 +94,16 @@ return LP;
 
 getFiberGraph = method ()
 getFiberGraph (Matrix,Matrix,Matrix) := List => (A,b,M) -> (getFiberGraph(A,b,for m in entries M list matrix vector m));
-getFiberGraph (Matrix,Matrix,List) := Graph => (A,b,M) -> (
-fiber:=getFiber(A,b);
-n:=#fiber;
+getFiberGraph (Matrix,Matrix,List) := Graph => (A,b,M) -> (getFiberGraph(getFiber(A,b),M));
+getFiberGraph (List,List) := Graph => (F,M) -> (
+n:=#F;
+if n==0 then return graph({});
 AA:=mutableMatrix(ZZ,n,n);
 for i in 0..n-1 do (
     for j in 0..n-1 do(
         if i == j then AA_(i,j)=0 else (
-            if member(fiber_i-fiber_j,M) or
-               member(fiber_j-fiber_i,M) then 
+            if member(F_i-F_j,M) or
+               member(F_j-F_i,M) then 
                AA_(i,j)=1 else
                AA_(i,j)=0;
             );
@@ -229,7 +230,5 @@ TEST ///
 A=matrix({{1,-1}});
 assert(getFiber(A,1)===false);
 ///
-
-
 
 end
