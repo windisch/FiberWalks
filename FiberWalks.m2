@@ -107,7 +107,7 @@ if opts.Directed then (
 --directed fiber graphs
    if n==0 then return digraph({});
    d:=numRows(F_0);
-   R:=QQ[vars(0..(d-1)),MonomialOrder=>opts.TermOrder];
+   R:=QQ[for i in 0..(d-1) list xx_(i),MonomialOrder=>opts.TermOrder];
    for e in subsets(F,2) do (
       if member(e_0-e_1,M) or member (e_1-e_0,M) then (
          v1:=flatten entries e_0;
@@ -250,11 +250,15 @@ document {
           "b=matrix({{2},{10}})",
           "M=toricMarkov(A)",
           "fiberGraph(A,b,M);",
-          "fiberGraph(A,b,M,Directed=>True,TermOrder=>Lex)",
+          "fiberGraph(A,b,M,Directed=>true,TermOrder=>Lex)",
           "F=fiber(A,b)",
           "fiberGraph(F,M);"
           },
      SeeAlso => fiber}
+
+
+
+
 
 
 -- Tests --
