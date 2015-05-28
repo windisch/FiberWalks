@@ -224,6 +224,12 @@ L=L|{getFiber(A,vector({3}))};
 assert(all(L,S->S==F));
 ///
 
+TEST ///
+--check infinite fibers 
+A=matrix({{1,-1}});
+assert(getFiber(A,1)===false);
+///
+
 
 
 end
