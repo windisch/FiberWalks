@@ -12,6 +12,10 @@ newPackage("FiberWalks",
 	)
 
 export {
+    --Datatypes
+    Fiber,
+    FiberGraph,
+
     --fiber graphs
     expansion,
     fiber,
@@ -36,10 +40,11 @@ xx:=vars(23);
 
 --TODOs: 
 --Move method expansion to Graphs.m2
---Write documentation
---Implement checks
 --make final distribution an argument in metropolisHastingsWalk
 --make new type: FiberGraph
+
+Fiber = new Type of List
+FiberGraph = new Type of Graph
 
 expansion = method (Options => {ReturnSet => false,Verbose=>false})
 expansion Graph := QQ => opts -> G -> (
@@ -77,10 +82,10 @@ return unique for p in P list M*p;
 );
 
 fiber = method ()
-fiber (Matrix,ZZ) := List => (A,b) -> (fiber(A,toList{b}));
-fiber (Matrix,List) := List => (A,b) -> (fiber(A,vector b));
-fiber (Matrix,Vector) := List => (A,b) -> (fiber(A,matrix b));
-fiber (Matrix,Matrix) := List => (A,b) -> (
+fiber (Matrix,ZZ) := Fiber => (A,b) -> (fiber(A,toList{b}));
+fiber (Matrix,List) := Fiber => (A,b) -> (fiber(A,vector b));
+fiber (Matrix,Vector) := Fiber => (A,b) -> (fiber(A,matrix b));
+fiber (Matrix,Matrix) := Fiber => (A,b) -> (
 d:=numColumns A;
 if numRows(A)!=numRows(b) or numColumns(b)>1 then return false;
 --check whether fiber finite
@@ -97,10 +102,10 @@ return LP;
 );
 
 fiberGraph = method (Options => {Directed => false,TermOrder=>Lex})
-fiberGraph (Matrix,Matrix,Matrix) := List => opts -> (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m,opts));
-fiberGraph (Matrix,Matrix,List) := Graph => opts -> (A,b,M) -> (fiberGraph(fiber(A,b),M,opts));
-fiberGraph (List,Matrix) := Graph => opts -> (F,M) -> (fiberGraph(F,for m in entries M list matrix vector m,opts));
-fiberGraph (List,List) := Graph => opts -> (F,M) -> (
+fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m,opts));
+fiberGraph (Matrix,Matrix,List) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(fiber(A,b),M,opts));
+fiberGraph (Fiber,Matrix) := FiberGraph => opts -> (F,M) -> (fiberGraph(F,for m in entries M list matrix vector m,opts));
+fiberGraph (Fiber,List) := FiberGraph => opts -> (F,M) -> (
 n:=#F;
 ee:={};
 if opts.Directed then (
@@ -233,7 +238,7 @@ document {
 
 document {
      Key => {fiberGraph,
-     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,List,Matrix),(fiberGraph,List,List)},
+     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,Fiber,Matrix),(fiberGraph,Fiber,List)},
      Headline => "Fiber graph of a matrix",
      Usage => "fiberGraph(A,b,M)",
      Inputs => {
@@ -323,6 +328,23 @@ document {
           "G=graph({{1,2},{2,3},{3,1},{3,4}})",
           "expansion(G)",
           "expansion completeGraph(10)"
+          }}
+
+document {
+     Key => {slem,
+     (slem,Matrix)},
+     Headline => "Second largest eigenvalue modulus",
+     Usage => "slem(T)",
+     Inputs => {
+          "T" => { "a Matrix"}},
+     Outputs => {
+          {"the second largest eigenvalue modulus of the random walk
+          corresponding to the transition matrix T"} },
+     EXAMPLE {
+          "needsPackage(\"Graphs\")",
+          "G=graph({{1,2},{2,3},{3,1},{3,4}})",
+          "T=simpleWalk(G);",
+          "slem(T)"
           }}
 
 -- Tests --
