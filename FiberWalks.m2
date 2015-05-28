@@ -42,7 +42,7 @@ xx:=vars(23);
 --make new type: FiberGraph
 
 expansion = method (Options => {ReturnSet => false,Verbose=>false})
-expansion Graph := ZZ => opts -> G -> (
+expansion Graph := QQ => opts -> G -> (
 V:=set(vertexSet(G));
 E:=edges(G);
 --return 0 if graph is empty graph
@@ -321,15 +321,16 @@ document {
      EXAMPLE {
           "needsPackage(\"Graphs\")",
           "G=graph({{1,2},{2,3},{3,1},{3,4}})",
-          "expansion(G)"
+          "expansion(G)",
+          "expansion completeGraph(10)"
           }}
 
 -- Tests --
 
 TEST ///
 --test expansion of graphs
-G=graph({{1,2},{2,3},{3,1}});
-assert(expansion(G)===2);
+G=pathGraph(7);
+assert(expansion(G)===1/3);
 ///
 
 TEST ///
