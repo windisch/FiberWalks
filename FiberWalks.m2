@@ -36,6 +36,7 @@ xx:=vars(23);
 --Move method expansion to Graphs.m2
 --Write documentation
 --Implement checks
+--make directed fiber graphs
 
 expansion = method (Options => {ReturnSet => false,Verbose=>false})
 expansion Graph := ZZ => opts -> G -> (
@@ -179,6 +180,41 @@ slem = method()
 slem (Matrix) := RR => (P) -> ( 
 return (rsort unique for v in eigenvalues P list abs v)_1;
 );
+
+beginDocumentation()
+
+
+document {
+        Key => FiberWalks,
+        Headline => "a package for random walks on fiber graphs",
+
+        EM "FiberWalks", " is a package for random walks on fiber
+        graphs",
+	
+	BR{},BR{},
+	BOLD "Literature \n",
+	UL {
+	  LI {"[DS1998] ", EM "Algebraic algorithms for sampling from
+     conditional distributions ", "(P. Diaconis, B. Sturmfels,
+     1998).\n"}}}
+
+document {
+     Key => {getFiber,
+     (getFiber,Matrix,ZZ),(getFiber,Matrix,List),(getFiber, Matrix,
+     Vector),(getFiber,Matrix,Matrix)},
+     Headline => "Fiber of a matrix",
+     Usage => "getFiber(A,b)",
+     Inputs => {
+          "A" => { "a Matrix"},
+          "b" => { "an element in ZZ, a List, a Vector or a Matrix"}},
+     Outputs => {
+          {"a List containing all elements of the fiber of A for the right-hand side b"} },
+     EXAMPLE {
+          "A=matrix({{1,0,-2},{1,1,1}})",
+          "b=matrix({{2},{10}})",
+          "F=getFiber(A,b)"
+          },
+     SeeAlso => getFiberGraph}
 
 
 
