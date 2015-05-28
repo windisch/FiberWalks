@@ -98,19 +98,13 @@ fiberGraph (Matrix,Matrix,Matrix) := List => (A,b,M) -> (fiberGraph(A,b,for m in
 fiberGraph (Matrix,Matrix,List) := Graph => (A,b,M) -> (fiberGraph(fiber(A,b),M));
 fiberGraph (List,List) := Graph => (F,M) -> (
 n:=#F;
-if n==0 then return graph({});
-AA:=mutableMatrix(ZZ,n,n);
-for i in 0..n-1 do (
-    for j in 0..n-1 do(
-        if i == j then AA_(i,j)=0 else (
-            if member(F_i-F_j,M) or
-               member(F_j-F_i,M) then 
-               AA_(i,j)=1 else
-               AA_(i,j)=0;
-            );
-        );
-    );
-return graph(matrix AA);
+ee:={};
+for e in subsets(F,2) do (
+   if member(e_0-e_1,M) or member (e_1-e_0,M) then (
+      ee=ee|{e}; 
+   ); 
+);
+return graph(ee);
 );
 
 getHemmeckeMatrix = method ()
@@ -212,10 +206,32 @@ document {
      EXAMPLE {
           "A=matrix({{1,0,-2},{1,1,1}})",
           "b=matrix({{2},{10}})",
-          "F=fiber(A,b)"
+          "fiber(A,b)"
           },
      SeeAlso => fiberGraph}
 
+document {
+     Key => {fiberGraph,
+     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,List,List)},
+     Headline => "Fiber graph of a matrix",
+     Usage => "fiberGraph(A,b,M)",
+     Inputs => {
+          "A" => { "a Matrix"},
+          "b" => { "a Matrix"},
+          "M" => { "a Matrix or a List"},
+          },
+
+     Outputs => {
+          {"the fiber graph of A with right-hand side b and allowed
+          moves M"} },
+     EXAMPLE {
+          "needsPackage(\"FourTiTwo\")",
+          "A=matrix({{1,0,-2},{1,1,1}})",
+          "b=matrix({{2},{10}})",
+          "M=toricMarkov(A)",
+          "fiberGraph(A,b,M)"
+          },
+     SeeAlso => fiber}
 
 
 -- Tests --
