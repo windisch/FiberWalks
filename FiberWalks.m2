@@ -79,6 +79,11 @@ getFiber (Matrix,Vector) := List => (A,b) -> (getFiber(A,matrix b));
 getFiber (Matrix,Matrix) := List => (A,b) -> (
 d:=numColumns A;
 if numRows(A)!=numRows(b) or numColumns(b)>1 then return false;
+--check whether fiber finite
+if (matrix(toList{d:{1}})**QQ) % image(transpose(A)**QQ)!=0 then (
+   << "Fiber not finite" << endl;
+   return false;
+   );
 --identity matrix
 I:=-map(ZZ^d); 
 o:=matrix toList(d:{0});
