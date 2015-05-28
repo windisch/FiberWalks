@@ -189,7 +189,6 @@ G=graph({});
 assert(expansion(G)===0);
 ///
 
-
 TEST ///
 --check creation of adapted moves
 M=matrix({{1,-1,0},{1,0,-1}});
@@ -200,6 +199,23 @@ matrix({{0},{0},{0}}),matrix({{1},{0},{-1}}),matrix({{2},{0},{-2}}),
 matrix({{0},{-1},{1}}),matrix({{1},{-1},{0}}),matrix({{2},{-1},{-1}}),
 matrix({{2},{-2},{0}})}
 assert(adaptedMoves(M,2)===AM);
+///
+
+TEST ///
+--check fiber 
+A=matrix({{1,1,1}});
+F={
+matrix {{3},{0},{0}},matrix({{2},{0},{1}}), 
+matrix({{1},{0},{2}}),matrix({{0},{0},{3}}), 
+matrix({{2},{1},{0}}),matrix({{1},{1},{1}}), 
+matrix({{0},{1},{2}}),matrix({{1},{2},{0}}), 
+matrix({{0},{2},{1}}),matrix({{0},{3},{0}})}
+L={};
+L=L|{getFiber(A,3)};
+L=L|{getFiber(A,{3})};
+L=L|{getFiber(A,matrix({{3}}))};
+L=L|{getFiber(A,vector({3}))};
+assert(all(L,S->S==F));
 ///
 
 
