@@ -104,6 +104,7 @@ fiberGraph (List,List) := Graph => opts -> (F,M) -> (
 n:=#F;
 ee:={};
 if opts.Directed then (
+--directed fiber graphs
    if n==0 then return digraph({});
    d:=numRows(F_0);
    R:=QQ[vars(0..(d-1)),MonomialOrder=>opts.TermOrder];
@@ -118,6 +119,7 @@ if opts.Directed then (
       );
       return digraph(ee);
    ) else (
+--undirected fiber graphs
    for e in subsets(F,2) do (
       if member(e_0-e_1,M) or member (e_1-e_0,M) then (
          ee=ee|{e}; 
@@ -240,7 +242,7 @@ document {
           "M" => { "a Matrix or a List"},
           },
      Outputs => {
-          {"the fiber graph of A with right-hand side b and allowed
+          {"the (directed) fiber graph of A with right-hand side b and allowed
           moves M"} },
      EXAMPLE {
           "needsPackage(\"FourTiTwo\")",
@@ -248,6 +250,7 @@ document {
           "b=matrix({{2},{10}})",
           "M=toricMarkov(A)",
           "fiberGraph(A,b,M);",
+          "fiberGraph(A,b,M,Directed=>True,TermOrder=>Lex)",
           "F=fiber(A,b)",
           "fiberGraph(F,M);"
           },
