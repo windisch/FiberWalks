@@ -13,26 +13,26 @@ newPackage("FiberWalks",
 
 export {
     --Datatypes
-    Fiber,
-    FiberGraph,
+    "Fiber",
+    "FiberGraph",
 
     --fiber graphs
-    fiber,
-    fiberGraph,
-    getHemmeckeMatrix,
-    adaptedMoves,
+    "fiber",
+    "fiberGraph",
+    "getHemmeckeMatrix",
+    "adaptedMoves",
 
     --transistion matrices
-    simpleFiberWalk,
-    simpleWalk,
-    metropolisHastingsWalk,
-    slem,
-    mixingTime,
+    "simpleFiberWalk",
+    "simpleWalk",
+    "metropolisHastingsWalk",
+    "slem",
+    "mixingTime",
 
     --options
-    ReturnSet,
-    Directed,
-    TermOrder
+    "ReturnSet",
+    "Directed",
+    "TermOrder"
 }
 
 --variable for polynomial ring
@@ -149,11 +149,21 @@ for i in 0..n-1 do (
 return matrix P;
 );
 
-metropolisHastingsWalk = method()
+metropolisHastingsWalk = method(Options => {Stationary =>
+false,Distribution => false})
 --metropolisHastingsWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(metropolisHastingsWalk(fiberGraph(A,b,M)));
-metropolisHastingsWalk (Graph) := Matrix => (G) -> (
+metropolisHastingsWalk (Graph) := Matrix => opts -> (G) -> (
 n:=#(vertexSet G);
 A:=adjacencyMatrix(G);
+p:=toList();
+if opts.Stationary then (
+    if sum(p)!=1 then (
+        return false; 
+        );
+    p=opts.Distribution;
+    
+    );
+
 P:=mutableMatrix(A**QQ);
 	for i in 0..(n-1) do (
 		for j in 0..(n-1) do (
