@@ -22,9 +22,11 @@ export {
     "getHemmeckeMatrix",
     "adaptedMoves",
     "convertMoves",
+    "moveGraph",
+    "findConnectingPath",
+    "countEdgeDisjointPaths",
 
     --properties
-    "isEdgeClosed",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -126,14 +128,60 @@ A:=(I|I|O|O|i|o)||(O|O|I|I|o|i)||ll;
 return A;
 );
 
-isEdgeClosed = method()
-isEdgeClosed (Matrix,Matrix) := Boolean => (A,M) -> (
-return true;
+moveGraph = method()
+moveGraph (Matrix,Matrix,Matrix) := FiberGraph => (A,M,G) -> (moveGraph(A,convertMoves(M),convertMoves(G)));
+moveGraph (Matrix,List,List) := FiberGraph => (A,M,G)-> (
+d:=numColumns A;
+I:=-map(ZZ^d); 
+o:=matrix toList(numRows(A):{0});
+
+--construct N(G)
+N:=mutableMatrix(ZZ,d,1);
+for i in 0..(d-1) do (
+   N_(i,0)=max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
+	);
+
+--construct F_M(G)
+P:=intersection(I,matrix N,A,o);
+LP:=latticePoints P;
+F:=fiberGraph(LP,M);
+--A priori, F is not connected (right?). Hence, return this connected
+--component of F which contains 0
+
+return F;
 );
 
 convertMoves = method()
 convertMoves (Matrix) := List => (M) -> (
 return for m in entries M list matrix vector m;
+);
+
+--TODO: Move this method to Graphs (implement Dijkstra maybe)
+findConnectingPath = method()
+findConnectingPath (Graph,Thing,Thing) := List => (G,v,w) -> (
+--return path (=list of vertices) where no vertex is used twice
+FW:=floydWarshall(G);
+--length of shortest path (no vertex is used twice)
+d:=FW#(v,w);
+if d == infinity then return {};
+P:=findPaths(G,v,d);
+for p in P do if last p === w then return p;
+return false;
+);
+
+--TODO: Move this method to Graphs (implement dijkstra maybe)
+countEdgeDisjointPaths = method()
+countEdgeDisjointPaths (Graph,Thing,Thing) := ZZ => (G,v,w) -> (
+P:=findConnectingPath(G,v,w);
+n:=0;
+while #P > 0 do (
+    n=n+1;
+--remove edges from G
+    PE:=for i in 1..(#P-1) list {P_(i-1),P_(i)};
+    G=deleteEdges(G,PE);
+    P=findConnectingPath(G,v,w);
+    );
+return n;
 );
 
 
@@ -410,6 +458,11 @@ TEST ///
 M=matrix({{1,-1,0},{1,0,-1}});
 MM={matrix({{1},{-1},{0}}),matrix({{1},{0},{-1}})};
 assert(convertMoves(M)===MM);
+///
+
+TEST /// 
+G=graph({{1,2},{2,3},{1,3},{3,4},{3,5},{4,6},{5,6}});
+assert(countEdgeDisjointPaths(G)===2);
 ///
 
 
