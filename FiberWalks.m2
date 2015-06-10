@@ -42,7 +42,7 @@ xx:=vars(23);
 
 --TODOs: 
 --make final distribution an argument in metropolisHastingsWalk
---make new type: FiberGraph
+--datatypes are not working
 
 Fiber = new Type of List
 FiberGraph = new Type of Graph
@@ -80,8 +80,8 @@ return LP;
 fiberGraph = method (Options => {Directed => false,TermOrder=>Lex})
 fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m,opts));
 fiberGraph (Matrix,Matrix,List) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(fiber(A,b),M,opts));
-fiberGraph (Fiber,Matrix) := FiberGraph => opts -> (F,M) -> (fiberGraph(F,for m in entries M list matrix vector m,opts));
-fiberGraph (Fiber,List) := FiberGraph => opts -> (F,M) -> (
+fiberGraph (List,Matrix) := FiberGraph => opts -> (F,M) -> (fiberGraph(F,for m in entries M list matrix vector m,opts));
+fiberGraph (List,List) := FiberGraph => opts -> (F,M) -> (
 n:=#F;
 ee:={};
 if opts.Directed then (
@@ -227,7 +227,7 @@ document {
 
 document {
      Key => {fiberGraph,
-     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,Fiber,Matrix),(fiberGraph,Fiber,List)},
+     (fiberGraph,Matrix,Matrix,Matrix),(fiberGraph,Matrix,Matrix,List),(fiberGraph,List,Matrix),(fiberGraph,List,List)},
      Headline => "Fiber graph of a matrix",
      Usage => "fiberGraph(A,b,M)",
      Inputs => {
