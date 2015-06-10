@@ -32,7 +32,9 @@ export {
     --options
     "ReturnSet",
     "Directed",
-    "TermOrder"
+    "TermOrder",
+    "Stationary",
+    "Distribution"
 }
 
 --variable for polynomial ring
