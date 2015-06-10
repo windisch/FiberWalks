@@ -21,6 +21,10 @@ export {
     "fiberGraph",
     "getHemmeckeMatrix",
     "adaptedMoves",
+    "convertMoves",
+
+    --properties
+    "isEdgeClosed",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -48,7 +52,7 @@ Fiber = new Type of List
 FiberGraph = new Type of Graph
 
 adaptedMoves = method()
-adaptedMoves (Matrix,ZZ) := List => (M,r) -> (adaptedMoves(for m in entries M list matrix vector m,r));
+adaptedMoves (Matrix,ZZ) := List => (M,r) -> (adaptedMoves(convertMoves(M),r));
 adaptedMoves (List,ZZ) := List => (M,r) -> (
 if #M===0 then return false;
 M=transpose matrix for m in M list flatten entries m;
@@ -78,9 +82,9 @@ return LP;
 );
 
 fiberGraph = method (Options => {Directed => false,TermOrder=>Lex})
-fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,for m in entries M list matrix vector m,opts));
+fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,convertMoves(M),opts));
 fiberGraph (Matrix,Matrix,List) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(fiber(A,b),M,opts));
-fiberGraph (List,Matrix) := FiberGraph => opts -> (F,M) -> (fiberGraph(F,for m in entries M list matrix vector m,opts));
+fiberGraph (List,Matrix) := FiberGraph => opts -> (F,M) ->(fiberGraph(F,convertMoves(M),opts));
 fiberGraph (List,List) := FiberGraph => opts -> (F,M) -> (
 n:=#F;
 ee:={};
@@ -122,12 +126,23 @@ A:=(I|I|O|O|i|o)||(O|O|I|I|o|i)||ll;
 return A;
 );
 
+isEdgeClosed = method()
+isEdgeClosed (Matrix,Matrix) := Boolean => (A,M) -> (
+return true;
+);
+
+convertMoves = method()
+convertMoves (Matrix) := List => (M) -> (
+return for m in entries M list matrix vector m;
+);
+
+
 ----------------------------------
 ---- TRANSITION MATRICES  --------
 ----------------------------------
 
 simpleFiberWalk = method ()
-simpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleFiberWalk(A,b,for m in entries M list matrix vector m));
+simpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) -> (simpleFiberWalk(A,b,convertMoves(M)));
 simpleFiberWalk (Matrix,Matrix,List) := Matrix => (A,b,M) -> (
 P:=mutableMatrix(adjacencyMatrix(fiberGraph(A,b,M))**QQ);
 D:=#(set(M)+set(-M));
@@ -248,6 +263,23 @@ document {
           "fiberGraph(F,M);"
           },
      SeeAlso => fiber}
+
+
+document {
+     Key => {convertMoves,
+     (convertMoves,Matrix)},
+     Headline => "Conversion of matrices containing Markov moves",
+     Usage => "convertMoves(M)",
+     Inputs => {
+          "M" => { "a Matrix"}},
+     Outputs => {
+          {"A List consisting of the rows of M written as matrices"}},
+     EXAMPLE {
+          "needsPackage(\"FourTiTwo\")",
+          "A=matrix({{1,1,1}})",
+          "M=toricMarkov(A)",
+          "convertMoves(M)"
+          }}
 
 document {
      Key => {simpleWalk,
@@ -372,5 +404,14 @@ TEST ///
 A=matrix({{1,-1}});
 assert(fiber(A,1)===false);
 ///
+
+TEST ///
+--check conversion of moves
+M=matrix({{1,-1,0},{1,0,-1}});
+MM={matrix({{1},{-1},{0}}),matrix({{1},{0},{-1}})};
+assert(convertMoves(M)===MM);
+///
+
+
 
 end
