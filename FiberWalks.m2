@@ -45,6 +45,7 @@ export {
     "fiberNeighborhood",
     "ReturnSet",
     "Stationary",
+    "LimitSize",
     "TermOrder",
     "Verbose",
     "Distribution"
@@ -130,19 +131,19 @@ phi (Matrix,List,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (
 --return min for G in N list if #G>= d then edgeCon(A,M,G) else continue;
 k:={};
 nN:=for G in N list if #G>=d then G else continue;
-<< #nN<< endl;
---return nN;
-
 if opts.Verbose then (
    num:=nN;
    i:=1;
-    );
-for G in nN do (
-     k=k|{edgeCon(A,M,G)}; 
    );
-return k;
+for G in nN do (
+    k=k|{edgeCon(A,M,G)}; 
+    if opts.Verbose then (
+       << i << "/" << num <<endl; 
+       i=i+1;
+        );
+    );
+return min k;
 );
-
 
 --TODO: remove dependence from A
 edgeCon = method(Options => {Verbose => false})
@@ -205,11 +206,11 @@ fN:=opts.fiberNeighborhood;
 if #fN==0 then (
    fN=fiberNeighborhoods(M);   
     );
-return unique for G in fN list #G;
+return sort unique for G in fN list #G;
 );
 
 
-fiberNeighborhoods = method (Options => {Verbose => false})
+fiberNeighborhoods = method (Options => {Verbose =>false,LimitSize=>-1})
 fiberNeighborhoods (Matrix) := List => opts -> (M) -> (fiberNeighborhoods(convertMoves(M),opts));
 fiberNeighborhoods (List) := List => opts -> (M) -> (
 --make M symmetric
@@ -220,8 +221,15 @@ if opts.Verbose then (
     num:=2^#M;
     i:=0;
     );
+--subsets to consider
+P:={};
+if opts.LimitSize == -1 then (
+    P=subsets(M);
+    ) else (
+    P=flatten(for i in 0..(opts.LimitSize) list subsets(M,i));
+    );
 
-for MM in subsets M do (
+for MM in P do (
    if opts.Verbose then (
       << i << "/" << num << endl; 
       i=i+1;
