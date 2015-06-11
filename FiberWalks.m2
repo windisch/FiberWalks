@@ -19,6 +19,8 @@ export {
     --fiber graphs
     "fiber",
     "fiberGraph",
+    "fiberDegree",
+    "fiberNeighborhoods",
     "getHemmeckeMatrix",
     "adaptedMoves",
     "convertMoves",
@@ -40,6 +42,7 @@ export {
     "Directed",
     "TermOrder",
     "Stationary",
+    "Verbose",
     "Distribution"
 }
 
@@ -116,6 +119,57 @@ if opts.Directed then (
    );
 );
 
+fiberDegree = method ()
+fiberDegree (Matrix,Matrix) := ZZ => (M,G) -> (fiberDegree(convertMoves(M),convertMoves(G)));
+fiberDegree (Matrix,List) := ZZ => (M,G) -> (fiberDegree(convertMoves(M),G));
+fiberDegree (List,Matrix) := ZZ => (M,G) -> (fiberDegree(M,convertMoves(G)));
+fiberDegree (List,List) := ZZ => (M,G) -> (
+d:=numRows first M;
+--make M symmetric
+M=unique(-M|M);
+--construct N(G)
+N:=mutableMatrix(ZZ,d,1);
+for i in 0..(d-1) do (
+   N_(i,0)=- max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
+	);
+N=matrix N;
+--compute fiber degree
+fD:=0;
+for m in M do (
+--check whether m>= N
+    if any(apply(flatten entries (m-N),i -> i <0),j->j===true)===false then fD=fD+1;
+    );
+return fD;
+);
+
+
+fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,convertMoves(M),opts));
+
+
+fiberNeighborhoods = method (Options => {Verbose => false})
+fiberNeighborhoods (Matrix) := List => opts -> (M) -> (fiberNeighborhoods(convertMoves(M),opts));
+fiberNeighborhoods (List) := List => opts -> (M) -> (
+--make M symmetric
+M=unique(-M|M);
+fN:={{}};
+--counter
+if opts.Verbose then (
+    num:=2^#M;
+    i:=0;
+    );
+
+for MM in subsets M do (
+   if opts.Verbose then (
+      << i << "/" << num << endl; 
+      i=i+1;
+       );
+   if #MM>0 then (
+      if fiberDegree(M,MM) == #MM then fN=fN|{MM};       
+       ); 
+    );
+return fN;
+);
+
 getHemmeckeMatrix = method ()
 getHemmeckeMatrix (ZZ) := Matrix => (k) -> (
 if k==0 then return matrix({{0}});
@@ -134,6 +188,7 @@ moveGraph (Matrix,List,List) := FiberGraph => (A,M,G)-> (
 d:=numColumns A;
 I:=-map(ZZ^d); 
 o:=matrix toList(numRows(A):{0});
+Z:=matrix toList(numColumns(A):{0});
 
 --construct N(G)
 N:=mutableMatrix(ZZ,d,1);
@@ -147,8 +202,10 @@ LP:=latticePoints P;
 F:=fiberGraph(LP,M);
 --A priori, F is not connected (right?). Hence, return this connected
 --component of F which contains 0
-
-return F;
+cc:=connectedComponents(F);
+for c in cc do (
+   if member(Z,set c) then return inducedSubgraph(F,c);
+   );
 );
 
 convertMoves = method()
@@ -464,7 +521,6 @@ TEST ///
 G=graph({{1,2},{2,3},{1,3},{3,4},{3,5},{4,6},{5,6}});
 assert(countEdgeDisjointPaths(G)===2);
 ///
-
 
 
 end
