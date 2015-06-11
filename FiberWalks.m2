@@ -20,6 +20,7 @@ export {
     "fiber",
     "fiberGraph",
     "fiberDegree",
+    "fiberDegrees",
     "fiberNeighborhoods",
     "getHemmeckeMatrix",
     "adaptedMoves",
@@ -40,10 +41,11 @@ export {
     "mixingTime",
 
     --options
-    "ReturnSet",
     "Directed",
-    "TermOrder",
+    "fiberNeighborhood",
+    "ReturnSet",
     "Stationary",
+    "TermOrder",
     "Verbose",
     "Distribution"
 }
@@ -127,34 +129,47 @@ phi (Matrix,List,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (
 --computes phi_M(d)
 --return min for G in N list if #G>= d then edgeCon(A,M,G) else continue;
 k:={};
+nN:=for G in N list if #G>=d then G else continue;
+<< #nN<< endl;
+--return nN;
+
 if opts.Verbose then (
-   num:=sum for G in N list if #G>=d then 1 else continue; 
+   num:=nN;
    i:=1;
     );
-for G in N do (
-   if #G>=d then (
-       if opts.Verbose then (
-          << i << "/" << num << endl;
-          i=i+1; 
-           );
-       k=k|{edgeCon(A,M,G)}; 
-      );
+for G in nN do (
+     k=k|{edgeCon(A,M,G)}; 
    );
-return min k;
+return k;
 );
 
 
 --TODO: remove dependence from A
-edgeCon = method()
-edgeCon (Matrix,Matrix,Matrix) := ZZ => (A,M,G) -> (edgeCon(A,convertMoves(M),convertMoves(G)));
-edgeCon (Matrix,Matrix,List) := ZZ => (A,M,G) -> (edgeCon(A,convertMoves(M),G));
-edgeCon (Matrix,List,Matrix) := ZZ => (A,M,G) -> (edgeCon(A,M,convertMoves(G)));
-edgeCon (Matrix,List,List) := ZZ => (A,M,G) -> (
+edgeCon = method(Options => {Verbose => false})
+edgeCon (Matrix,Matrix,Matrix) := ZZ => opts -> (A,M,G) -> (edgeCon(A,convertMoves(M),convertMoves(G),opts));
+edgeCon (Matrix,Matrix,List) := ZZ => opts -> (A,M,G) -> (edgeCon(A,convertMoves(M),G,opts));
+edgeCon (Matrix,List,Matrix) := ZZ => opts -> (A,M,G) -> (edgeCon(A,M,convertMoves(G),opts));
+edgeCon (Matrix,List,List) := ZZ => opts -> (A,M,G) -> (
 --computes kappa_M(G)
+if opts.Verbose then (<< "Compute move graph";);
 F:=moveGraph(A,M,G);
+if opts.Verbose then (<< "...done" <<endl;);
 k:={};
+if opts.Verbose then (
+    n:=#G;
+    i:=1;
+    );
 Z:=matrix toList(numColumns(A):{0});
-return max for g in G list countEdgeDisjointPaths(F,Z,g);
+--return max for g in G list countEdgeDisjointPaths(F,Z,g);
+if opts.Verbose then (<< "Count edge-disjoint paths" << endl;);
+for g in G do (
+    if opts.Verbose then (
+        << i << "/" << n << endl;
+        i=i+1;
+        );
+    k=k|{countEdgeDisjointPaths(F,Z,g)}; 
+    );
+return max k;
 );
 
 
@@ -181,8 +196,17 @@ for m in M do (
 return fD;
 );
 
-
-fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,convertMoves(M),opts));
+fiberDegrees = method (Options => {fiberNeighborhood => {}})
+fiberDegrees (Matrix) := ZZ => opts -> (M) -> (fiberDegrees(convertMoves(M),opts));
+fiberDegrees (List) := ZZ => opts -> (M) -> (
+--returns all possible fiber degrees
+fN:=opts.fiberNeighborhood;
+--compute fiberNeighborhood if not provided in the arguments
+if #fN==0 then (
+   fN=fiberNeighborhoods(M);   
+    );
+return unique for G in fN list #G;
+);
 
 
 fiberNeighborhoods = method (Options => {Verbose => false})
