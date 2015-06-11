@@ -29,6 +29,8 @@ export {
     "countEdgeDisjointPaths",
 
     --properties
+    "edgeCon",
+    "phi",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -119,6 +121,43 @@ if opts.Directed then (
    );
 );
 
+phi = method(Options => {Verbose => false})
+phi (Matrix,Matrix,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (phi(A,convertMoves(M),N,d,opts));
+phi (Matrix,List,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (
+--computes phi_M(d)
+--return min for G in N list if #G>= d then edgeCon(A,M,G) else continue;
+k:={};
+if opts.Verbose then (
+   num:=sum for G in N list if #G>=d then 1 else continue; 
+   i:=1;
+    );
+for G in N do (
+   if #G>=d then (
+       if opts.Verbose then (
+          << i << "/" << num << endl;
+          i=i+1; 
+           );
+       k=k|{edgeCon(A,M,G)}; 
+      );
+   );
+return min k;
+);
+
+
+--TODO: remove dependence from A
+edgeCon = method()
+edgeCon (Matrix,Matrix,Matrix) := ZZ => (A,M,G) -> (edgeCon(A,convertMoves(M),convertMoves(G)));
+edgeCon (Matrix,Matrix,List) := ZZ => (A,M,G) -> (edgeCon(A,convertMoves(M),G));
+edgeCon (Matrix,List,Matrix) := ZZ => (A,M,G) -> (edgeCon(A,M,convertMoves(G)));
+edgeCon (Matrix,List,List) := ZZ => (A,M,G) -> (
+--computes kappa_M(G)
+F:=moveGraph(A,M,G);
+k:={};
+Z:=matrix toList(numColumns(A):{0});
+return max for g in G list countEdgeDisjointPaths(F,Z,g);
+);
+
+
 fiberDegree = method ()
 fiberDegree (Matrix,Matrix) := ZZ => (M,G) -> (fiberDegree(convertMoves(M),convertMoves(G)));
 fiberDegree (Matrix,List) := ZZ => (M,G) -> (fiberDegree(convertMoves(M),G));
@@ -182,6 +221,8 @@ A:=(I|I|O|O|i|o)||(O|O|I|I|o|i)||ll;
 return A;
 );
 
+
+--TODO: remove dependence of A
 moveGraph = method()
 moveGraph (Matrix,Matrix,Matrix) := FiberGraph => (A,M,G) -> (moveGraph(A,convertMoves(M),convertMoves(G)));
 moveGraph (Matrix,List,List) := FiberGraph => (A,M,G)-> (
