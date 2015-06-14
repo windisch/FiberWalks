@@ -20,6 +20,7 @@ export {
     "fiber",
     "fiberGraph",
     "fiberDegree",
+    "fiberConstant",
     "fiberDegrees",
     "fiberNeighborhoods",
     "getHemmeckeMatrix",
@@ -197,6 +198,17 @@ for m in M do (
 return fD;
 );
 
+fiberConstant = method()
+fiberConstant (Matrix) := Matrix => (G) -> (fiberConstant(convertMoves(G)));
+fiberConstant (List) := Matrix => (G) -> (
+d:=numRows first G;
+N:=mutableMatrix(ZZ,d,1);
+for i in 0..(d-1) do (
+   N_(i,0)=- max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
+	);
+return matrix N;
+);
+
 fiberDegrees = method (Options => {fiberNeighborhood => {}})
 fiberDegrees (Matrix) := ZZ => opts -> (M) -> (fiberDegrees(convertMoves(M),opts));
 fiberDegrees (List) := ZZ => opts -> (M) -> (
@@ -226,6 +238,7 @@ P:={};
 if opts.LimitSize == -1 then (
     P=subsets(M);
     ) else (
+--restrict computation on fixed i and delete P from memory afterwards
     P=flatten(for i in 0..(opts.LimitSize) list subsets(M,i));
     );
 
