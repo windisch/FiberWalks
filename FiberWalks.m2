@@ -29,6 +29,7 @@ export {
     "moveGraph",
     "findConnectingPath",
     "countEdgeDisjointPaths",
+    "minimalDegree",
 
     --properties
     "edgeCon",
@@ -46,7 +47,7 @@ export {
     "fiberNeighborhood",
     "ReturnSet",
     "Stationary",
-    "LimitSize",
+    "Size",
     "TermOrder",
     "Verbose",
     "Distribution"
@@ -222,31 +223,35 @@ return sort unique for G in fN list #G;
 );
 
 
-fiberNeighborhoods = method (Options => {Verbose =>false,LimitSize=>-1})
+fiberNeighborhoods = method (Options => {Verbose =>false,Size=>-1})
 fiberNeighborhoods (Matrix) := List => opts -> (M) -> (fiberNeighborhoods(convertMoves(M),opts));
 fiberNeighborhoods (List) := List => opts -> (M) -> (
 --make M symmetric
 M=unique(-M|M);
 fN:={{}};
 --counter
-if opts.Verbose then (
-    num:=2^#M;
-    i:=0;
-    );
 --subsets to consider
 P:={};
-if opts.LimitSize == -1 then (
+if opts.Size == -1 then (
     P=subsets(M);
     ) else (
 --restrict computation on fixed i and delete P from memory afterwards
-    P=flatten(for i in 0..(opts.LimitSize) list subsets(M,i));
+    P=subsets(M,opts.Size);
+    );
+
+if opts.Verbose then (
+    num:=#P;
+    i:=0;
     );
 
 for MM in P do (
    if opts.Verbose then (
+       if opts.Size !=-1 then (
+           << opts.Size << ":" << "\t";
+           );
       << i << "/" << num << endl; 
       i=i+1;
-       );
+      );
    if #MM>0 then (
       if fiberDegree(M,MM) == #MM then fN=fN|{MM};       
        ); 
@@ -297,6 +302,12 @@ for c in cc do (
 convertMoves = method()
 convertMoves (Matrix) := List => (M) -> (
 return for m in entries M list matrix vector m;
+);
+
+--TODO: Move this method to Graphs
+minimalDegree = method()
+minimalDegree (Graph) := ZZ => G -> (
+return min for v in vertexSet(G) list degree(G,v);
 );
 
 --TODO: Move this method to Graphs (implement Dijkstra maybe)
