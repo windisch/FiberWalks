@@ -34,6 +34,7 @@ export {
     --properties
     "edgeCon",
     "phi",
+    "vectorSupport",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -257,6 +258,13 @@ for MM in P do (
        ); 
     );
 return fN;
+);
+
+vectorSupport = method()
+vectorSupport (Matrix) := List => (A) -> (
+d:=numColumns(A);
+r:=numRows(A);
+return flatten for i in 0..(r-1) list for j in 0..(d-1) list if A_(i,j)!=0 then (i,j) else continue;
 );
 
 getHemmeckeMatrix = method ()
