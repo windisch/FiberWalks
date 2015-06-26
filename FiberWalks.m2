@@ -27,6 +27,7 @@ export {
     "adaptedMoves",
     "convertMoves",
     "moveGraph",
+    "lineGraph",
     "findConnectingPath",
     "countEdgeDisjointPaths",
     "minimalDegree",
@@ -173,7 +174,7 @@ for g in G do (
         );
     k=k|{countEdgeDisjointPaths(F,Z,g)}; 
     );
-return max k;
+return min k;
 );
 
 
@@ -330,6 +331,25 @@ P:=findPaths(G,v,d);
 for p in P do if last p === w then return p;
 return false;
 );
+
+--TODO: Move this method to Graphs
+lineGraph = method()
+lineGraph (Graph) := Graph => (G) -> (
+E:=edges(G);
+if #E==0 then return graph({});
+EE:={};
+for e in E do (
+   for f in E do (
+      if not e===f then (
+         if #(e*f)>0 then (
+             EE=EE|{{e,f}};
+             ); 
+          );   
+       ); 
+    );
+return graph(EE);
+);
+
 
 --TODO: Move this method to Graphs (implement dijkstra maybe)
 countEdgeDisjointPaths = method()
