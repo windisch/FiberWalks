@@ -17,6 +17,7 @@ export {
     "FiberGraph",
 
     --fiber graphs
+    "enumerateSubForests",
     "fiber",
     "fiberGraph",
     "fiberDegree",
@@ -24,8 +25,10 @@ export {
     "fiberDegrees",
     "fiberNeighborhoods",
     "getHemmeckeMatrix",
+    "supportGraph",
     "adaptedMoves",
     "convertMoves",
+    "isNeighborly",
     "moveGraph",
     "lineGraph",
     "findConnectingPath",
@@ -36,6 +39,7 @@ export {
     "edgeCon",
     "phi",
     "vectorSupport",
+    "checkForestsProperty",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -347,7 +351,11 @@ for e in E do (
           );   
        ); 
     );
-return graph(EE);
+--non singeltons
+nS:=unique flatten EE;
+--singeltons
+S:=for e in E list if member(e,nS)===false then e else continue;
+return graph(EE,Singletons=>S);
 );
 
 
@@ -366,6 +374,74 @@ while #P > 0 do (
 return n;
 );
 
+
+--This is only for independence model
+supportGraph = method()
+supportGraph (List) := Graph => (G) -> (
+d:=lift(sqrt numRows first G,ZZ);
+N:=-reshape(ZZ^d,ZZ^d,fiberConstant(G));
+--transform adjacency matrix of bipartite graph
+--bipartite vertex clusters {1..d} and {d+1,..,2d}}
+E:={};
+for i in 1..d do (
+   for j in 1..d do (
+       if N_(i-1,j-1)>0 then E=E|{{i,d+j}};
+       
+       ); 
+    );
+
+return graph(E,EntryMode=>"edges");
+);
+
+--This is only for independence model
+enumerateSubForests = method()
+enumerateSubForests (List,List) := List => (N,G) -> (
+d:=lift(sqrt numRows first G,ZZ);
+NN:=-reshape(ZZ^d,ZZ^d,fiberConstant(G));
+FF:={};
+for GG in N do(
+    --check if forest
+    if isForest(supportGraph(GG)) then ( 
+         NNN:=-reshape(ZZ^d,ZZ^d,fiberConstant(GG));
+         --check if subgraph
+         if all(flatten entries(NN-NNN),i->i>=0) then (
+             --check if spanning
+             spanning:=true;
+             for i in 0..(d-1) do (
+                  if (sum flatten entries NN_i)>0 and (sum flatten entries NNN_i)==0 then spanning=false;    
+                  if (sum flatten entries NN^{i})>0 and (sum flatten entries NNN^{i})==0 then spanning=false;    
+             );
+
+             if spanning then FF=FF|{GG};
+        
+             );
+         );
+    );
+return FF;
+);
+
+
+--This is only for independence model
+checkForestsProperty = method()
+checkForestsProperty (List,HashTable,List) := Boolean => (N,kappa,G) ->(
+FF:=enumerateSubForests(N,G);
+for T in FF do (
+    if kappa#G<kappa#T then (
+        << T << endl;
+       return false;
+        ); 
+    );
+return true;
+);
+
+--This is only for independence model
+isNeighborly = method()
+isNeighborly (Graph) := Boolean => (G) -> (
+LG:=lineGraph(G);
+CG:=complementGraph(LG);
+deg:=apply(vertexSet(CG),i->degree(CG,i));
+return all(deg,i->i>0);
+);
 
 ----------------------------------
 ---- TRANSITION MATRICES  --------
