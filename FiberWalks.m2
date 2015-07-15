@@ -17,29 +17,27 @@ export {
     "FiberGraph",
 
     --fiber graphs
-    "enumerateSubForests",
     "fiber",
     "fiberGraph",
     "fiberDegree",
     "fiberConstant",
     "fiberDegrees",
+    "fiberMoves",
     "fiberNeighborhoods",
     "getHemmeckeMatrix",
-    "supportGraph",
     "adaptedMoves",
     "convertMoves",
-    "isNeighborly",
     "moveGraph",
     "lineGraph",
     "findConnectingPath",
     "countEdgeDisjointPaths",
     "minimalDegree",
+    "enumerateNeighborlyTrees",
 
     --properties
     "edgeCon",
     "phi",
     "vectorSupport",
-    "checkForestsProperty",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -228,6 +226,13 @@ if #fN==0 then (
 return sort unique for G in fN list #G;
 );
 
+fiberMoves = method();
+fiberMoves (Matrix,Matrix) := List => (M,N) -> (fiberMoves(convertMoves(M),N))
+fiberMoves (List,Matrix) := List => (M,N) -> (
+--make M symmetric
+M=unique(-M|M);
+return for g in M list if all(flatten entries(g+N),i-> i>=0) then g else continue;    
+);
 
 fiberNeighborhoods = method (Options => {Verbose =>false,Size=>-1})
 fiberNeighborhoods (Matrix) := List => opts -> (M) -> (fiberNeighborhoods(convertMoves(M),opts));
@@ -285,36 +290,82 @@ return A;
 );
 
 
---TODO: remove dependence of A
-moveGraph = method()
-moveGraph (Matrix,Matrix,Matrix) := FiberGraph => (A,M,G) -> (moveGraph(A,convertMoves(M),convertMoves(G)));
-moveGraph (Matrix,List,List) := FiberGraph => (A,M,G)-> (
-d:=numColumns A;
-I:=-map(ZZ^d); 
-o:=matrix toList(numRows(A):{0});
-Z:=matrix toList(numColumns(A):{0});
+moveGraph = method ()
+moveGraph (Matrix,Matrix) := FiberGraph => (M,G) -> (moveGraph(convertMoves(M),convertMoves(G)));
+moveGraph (List,List) := FiberGraph => (M,G) -> (
 
---construct N(G)
-N:=mutableMatrix(ZZ,d,1);
-for i in 0..(d-1) do (
-   N_(i,0)=max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
-	);
+o:=matrix toList(numRows(first G):{0});
+fC:=fiberConstant(G);
 
---construct F_M(G)
-P:=intersection(I,matrix N,A,o);
-LP:=latticePoints P;
-F:=fiberGraph(LP,M);
---A priori, F is not connected (right?). Hence, return this connected
---component of F which contains 0
-cc:=connectedComponents(F);
-for c in cc do (
-   if member(Z,set c) then return inducedSubgraph(F,c);
-   );
+--enumerate vertices
+V:={};
+tC:={o};
+
+while(#tC>0) do (
+    v:=first tC;
+    tC=delete(v,tC);
+    for g in M do (
+       vnew:=v+g;
+       if all(flatten entries(vnew-fC),i-> i>=0) === true then (
+            if member(vnew,V) === false then (
+               V=V|{vnew}; 
+               tC=unique(tC|{vnew});
+               );
+            );
+        );
+    );
+return fiberGraph(V,M); 
 );
+
+----TODO: remove dependence of A
+--moveGraph = method()
+--moveGraph (Matrix,Matrix,Matrix) := FiberGraph => (A,M,G) -> (moveGraph(A,convertMoves(M),convertMoves(G)));
+--moveGraph (Matrix,List,List) := FiberGraph => (A,M,G)-> (
+--d:=numColumns A;
+--I:=-map(ZZ^d); 
+--o:=matrix toList(numRows(A):{0});
+--Z:=matrix toList(numColumns(A):{0});
+--
+----construct N(G)
+--N:=mutableMatrix(ZZ,d,1);
+--for i in 0..(d-1) do (
+--   N_(i,0)=max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
+--	);
+--
+----construct F_M(G)
+--P:=intersection(I,matrix N,A,o);
+--LP:=latticePoints P;
+--F:=fiberGraph(LP,M);
+----A priori, F is not connected (right?). Hence, return this connected
+----component of F which contains 0
+--cc:=connectedComponents(F);
+--for c in cc do (
+--   if member(Z,set c) then return inducedSubgraph(F,c);
+--   );
+--);
 
 convertMoves = method()
 convertMoves (Matrix) := List => (M) -> (
 return for m in entries M list matrix vector m;
+);
+
+--TODO: Move this method to Graphs
+enumerateNeighborlyTrees = method()
+enumerateNeighborlyTrees (ZZ) := List => (n) -> (
+--computes (up to symmetry) all neighborly trees
+--on n edges
+--tree on n edges has n+1 vertices
+V:=toList(0..n);
+T:={};
+for E in subsets(subsets(V,2),n) do (
+    G:=graph(E);
+    if isTree(G) then (
+       if isNeighborly(G) then (
+          T=T|{G};           
+           );
+        );  
+    );
+return T;
 );
 
 --TODO: Move this method to Graphs
@@ -372,75 +423,6 @@ while #P > 0 do (
     P=findConnectingPath(G,v,w);
     );
 return n;
-);
-
-
---This is only for independence model
-supportGraph = method()
-supportGraph (List) := Graph => (G) -> (
-d:=lift(sqrt numRows first G,ZZ);
-N:=-reshape(ZZ^d,ZZ^d,fiberConstant(G));
---transform adjacency matrix of bipartite graph
---bipartite vertex clusters {1..d} and {d+1,..,2d}}
-E:={};
-for i in 1..d do (
-   for j in 1..d do (
-       if N_(i-1,j-1)>0 then E=E|{{i,d+j}};
-       
-       ); 
-    );
-
-return graph(E,EntryMode=>"edges");
-);
-
---This is only for independence model
-enumerateSubForests = method()
-enumerateSubForests (List,List) := List => (N,G) -> (
-d:=lift(sqrt numRows first G,ZZ);
-NN:=-reshape(ZZ^d,ZZ^d,fiberConstant(G));
-FF:={};
-for GG in N do(
-    --check if forest
-    if isForest(supportGraph(GG)) then ( 
-         NNN:=-reshape(ZZ^d,ZZ^d,fiberConstant(GG));
-         --check if subgraph
-         if all(flatten entries(NN-NNN),i->i>=0) then (
-             --check if spanning
-             spanning:=true;
-             for i in 0..(d-1) do (
-                  if (sum flatten entries NN_i)>0 and (sum flatten entries NNN_i)==0 then spanning=false;    
-                  if (sum flatten entries NN^{i})>0 and (sum flatten entries NNN^{i})==0 then spanning=false;    
-             );
-
-             if spanning then FF=FF|{GG};
-        
-             );
-         );
-    );
-return FF;
-);
-
-
---This is only for independence model
-checkForestsProperty = method()
-checkForestsProperty (List,HashTable,List) := Boolean => (N,kappa,G) ->(
-FF:=enumerateSubForests(N,G);
-for T in FF do (
-    if kappa#G<kappa#T then (
-        << T << endl;
-       return false;
-        ); 
-    );
-return true;
-);
-
---This is only for independence model
-isNeighborly = method()
-isNeighborly (Graph) := Boolean => (G) -> (
-LG:=lineGraph(G);
-CG:=complementGraph(LG);
-deg:=apply(vertexSet(CG),i->degree(CG,i));
-return all(deg,i->i>0);
 );
 
 ----------------------------------
