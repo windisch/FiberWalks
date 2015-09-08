@@ -28,10 +28,8 @@ export {
     "adaptedMoves",
     "convertMoves",
     "moveGraph",
-    "lineGraph",
     "findConnectingPath",
     "countEdgeDisjointPaths",
-    "minimalDegree",
     "enumerateNeighborlyTrees",
 
     --properties
@@ -85,10 +83,10 @@ fiber (Matrix,Matrix) := Fiber => (A,b) -> (
 d:=numColumns A;
 if numRows(A)!=numRows(b) or numColumns(b)>1 then return false;
 --check whether fiber finite
-if (matrix(toList{d:{1}})**QQ) % image(transpose(A)**QQ)!=0 then (
-   << "Fiber not finite" << endl;
-   return false;
-   );
+--if (matrix(toList{d:{1}})**QQ) % image(transpose(A)**QQ)!=0 then (
+--   << "Fiber not finite" << endl;
+--   return false;
+--   );
 --identity matrix
 I:=-map(ZZ^d); 
 o:=matrix toList(d:{0});
@@ -289,7 +287,6 @@ A:=(I|I|O|O|i|o)||(O|O|I|I|o|i)||ll;
 return A;
 );
 
-
 moveGraph = method ()
 moveGraph (Matrix,Matrix) := FiberGraph => (M,G) -> (moveGraph(convertMoves(M),convertMoves(G)));
 moveGraph (List,List) := FiberGraph => (M,G) -> (
@@ -350,29 +347,23 @@ return for m in entries M list matrix vector m;
 );
 
 --TODO: Move this method to Graphs
-enumerateNeighborlyTrees = method()
-enumerateNeighborlyTrees (ZZ) := List => (n) -> (
+--enumerateNeighborlyTrees = method()
+--enumerateNeighborlyTrees (ZZ) := List => (n) -> (
 --computes (up to symmetry) all neighborly trees
 --on n edges
 --tree on n edges has n+1 vertices
-V:=toList(0..n);
-T:={};
-for E in subsets(subsets(V,2),n) do (
-    G:=graph(E);
-    if isTree(G) then (
-       if isNeighborly(G) then (
-          T=T|{G};           
-           );
-        );  
-    );
-return T;
-);
-
---TODO: Move this method to Graphs
-minimalDegree = method()
-minimalDegree (Graph) := ZZ => G -> (
-return min for v in vertexSet(G) list degree(G,v);
-);
+--V:=toList(0..n);
+--T:={};
+--for E in subsets(subsets(V,2),n) do (
+--    G:=graph(E);
+--    if isTree(G) then (
+--       if isNeighborly(G) then (
+--          T=T|{G};           
+--           );
+--        );  
+--    );
+--return T;
+--);
 
 --TODO: Move this method to Graphs (implement Dijkstra maybe)
 findConnectingPath = method()
@@ -386,29 +377,6 @@ P:=findPaths(G,v,d);
 for p in P do if last p === w then return p;
 return false;
 );
-
---TODO: Move this method to Graphs
-lineGraph = method()
-lineGraph (Graph) := Graph => (G) -> (
-E:=edges(G);
-if #E==0 then return graph({});
-EE:={};
-for e in E do (
-   for f in E do (
-      if not e===f then (
-         if #(e*f)>0 then (
-             EE=EE|{{e,f}};
-             ); 
-          );   
-       ); 
-    );
---non singeltons
-nS:=unique flatten EE;
---singeltons
-S:=for e in E list if member(e,nS)===false then e else continue;
-return graph(EE,Singletons=>S);
-);
-
 
 --TODO: Move this method to Graphs (implement dijkstra maybe)
 countEdgeDisjointPaths = method()
