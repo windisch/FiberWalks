@@ -25,6 +25,7 @@ export {
     "fiberMoves",
     "fiberNeighborhoods",
     "getHemmeckeMatrix",
+--    "minDegAtVertex",
     "adaptedMoves",
     "convertMoves",
     "moveGraph",
@@ -223,6 +224,15 @@ if #fN==0 then (
     );
 return sort unique for G in fN list #G;
 );
+
+--minDegAtVertex = method();
+--minDegAtVertex (Matrix,Matrix,List) := Boolean => (A,b,M) -> (
+--F:=fiber(A,b);
+--V:=for v in entries transpose vertices convexHull F list transpose lift(matrix({v}),ZZ);
+--G:=fiberGraph(F,M);
+--
+--return minimalDegree G===min for v in V list degree(G,v)
+----);
 
 fiberMoves = method();
 fiberMoves (Matrix,Matrix) := List => (M,N) -> (fiberMoves(convertMoves(M),N))
