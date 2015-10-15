@@ -28,6 +28,7 @@ export {
 --    "minDegAtVertex",
     "adaptedMoves",
     "convertMoves",
+    "hypergeometric",
     "moveGraph",
     "findConnectingPath",
     "countEdgeDisjointPaths",
@@ -425,7 +426,7 @@ scaledSimpleFiberWalk = method ()
 scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M)));
 scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => (A,b,M) -> (
 
---remove multiples from Markov basis
+--TODO: remove multiples from Markov basis
 F:=fiber(A,b);
 d:=numColumns A;
 n:=#F;
@@ -448,9 +449,20 @@ for i in 0..(n-1) do (
         );
        P_(i,i)=1-sum flatten entries P^{i};
 );
-
 return matrix P;
+);
 
+hypergeometric = method()
+hypergeometric (Matrix) := RR => (v) -> (
+return  numeric(sum flatten entries v)!/(product for vv in flatten entries v list vv!)
+);
+hypergeometric (List) := HashTable => (F) -> (
+--This returns the conditional hypergeometric distribution (which
+--does not depend on parameters)
+--all elements in F must have the same norm
+p:=apply(F,f->{f,hypergeometric(f)});
+c:=sum for f in p list f_1;
+return apply(p, f-> {f_0,f_1/c});
 );
 
 simpleWalk = method()
