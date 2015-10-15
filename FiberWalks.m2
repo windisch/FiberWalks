@@ -40,6 +40,7 @@ export {
 
     --transistion matrices
     "simpleFiberWalk",
+    "scaledSimpleFiberWalk",
     "simpleWalk",
     "metropolisHastingsWalk",
     "slem",
@@ -418,6 +419,38 @@ for i in 0..numRows(P)-1 do (
    for j in 0..numColumns(P)-1 do if j!=i then P_(i,j)=P_(i,j)*1/D;
     );
 return matrix P;
+);
+
+scaledSimpleFiberWalk = method ()
+scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M)));
+scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => (A,b,M) -> (
+
+--remove multiples from Markov basis
+F:=fiber(A,b);
+d:=numColumns A;
+n:=#F;
+mm:=#M;
+P:=mutableMatrix(QQ,n,n);
+for i in 0..(n-1) do (
+    v:=F_i;
+    print v;
+        for m in M do (
+            print m;
+            l:=floor max for j in 0..(d-1) list if m_(j,0)>0 then v_(j,0)/m_(j,0) else 0;
+            u:=floor max for j in 0..(d-1) list if m_(j,0)<0 then -v_(j,0)/m_(j,0) else 0;
+
+            for j in -l..u do (
+                if j!=0 then (
+                  k:=position(F,w->w==v+j*m);
+                  P_(i,k)=1/mm*1/(l+u+1);
+                     );
+                );
+        );
+       P_(i,i)=1-sum flatten entries P^{i};
+);
+
+return matrix P;
+
 );
 
 simpleWalk = method()
