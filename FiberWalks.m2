@@ -28,6 +28,7 @@ export {
 --    "minDegAtVertex",
     "adaptedMoves",
     "convertMoves",
+    "deepestDecent",
     "hypergeometric",
     "moveGraph",
     "findConnectingPath",
@@ -422,9 +423,10 @@ for i in 0..numRows(P)-1 do (
 return matrix P;
 );
 
-scaledSimpleFiberWalk = method ()
-scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M)));
-scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => (A,b,M) -> (
+
+scaledSimpleFiberWalk = method (Options=>{Distribution=>"uniform"})
+scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => opts -> (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M),opts));
+scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => opts -> (A,b,M) -> (
 
 --TODO: remove multiples from Markov basis
 F:=fiber(A,b);
@@ -434,22 +436,33 @@ mm:=#M;
 P:=mutableMatrix(QQ,n,n);
 for i in 0..(n-1) do (
     v:=F_i;
-    print v;
         for m in M do (
-            print m;
-            l:=floor max for j in 0..(d-1) list if m_(j,0)>0 then v_(j,0)/m_(j,0) else 0;
-            u:=floor max for j in 0..(d-1) list if m_(j,0)<0 then -v_(j,0)/m_(j,0) else 0;
+            l:=deepestDecent(v,-m);
+            u:=deepestDecent(v,m);
 
-            for j in -l..u do (
-                if j!=0 then (
-                  k:=position(F,w->w==v+j*m);
-                  P_(i,k)=1/mm*1/(l+u+1);
+                  for j in -l..u do (
+                     if j!=0 then (
+                        k:=position(F,w->w==v+j*m);
+
+                        if opts.Distribution=="uniform" then (
+                           P_(i,k)=1/mm*1/(l+u+1);
+                           );
+                        if opts.Distribution=="binomial" then (
+                           P_(i,k)=binomial(l+u,l+j)*(0.5)^(l+j); 
+                           );
+                        );
                      );
-                );
+
         );
        P_(i,i)=1-sum flatten entries P^{i};
 );
 return matrix P;
+);
+
+deepestDecent = method()
+deepestDecent (Matrix,Matrix) := ZZ => (v,m) -> (
+d:=numRows(v);
+return floor min for j in 0..(d-1) list if m_(j,0)<0 then -v_(j,0)/m_(j,0) else continue;
 );
 
 hypergeometric = method()
