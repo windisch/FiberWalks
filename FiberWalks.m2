@@ -327,56 +327,10 @@ while(#tC>0) do (
 return fiberGraph(V,M); 
 );
 
-----TODO: remove dependence of A
---moveGraph = method()
---moveGraph (Matrix,Matrix,Matrix) := FiberGraph => (A,M,G) -> (moveGraph(A,convertMoves(M),convertMoves(G)));
---moveGraph (Matrix,List,List) := FiberGraph => (A,M,G)-> (
---d:=numColumns A;
---I:=-map(ZZ^d); 
---o:=matrix toList(numRows(A):{0});
---Z:=matrix toList(numColumns(A):{0});
---
-----construct N(G)
---N:=mutableMatrix(ZZ,d,1);
---for i in 0..(d-1) do (
---   N_(i,0)=max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
---	);
---
-----construct F_M(G)
---P:=intersection(I,matrix N,A,o);
---LP:=latticePoints P;
---F:=fiberGraph(LP,M);
-----A priori, F is not connected (right?). Hence, return this connected
-----component of F which contains 0
---cc:=connectedComponents(F);
---for c in cc do (
---   if member(Z,set c) then return inducedSubgraph(F,c);
---   );
---);
-
 convertMoves = method()
 convertMoves (Matrix) := List => (M) -> (
 return for m in entries M list matrix vector m;
 );
-
---TODO: Move this method to Graphs
---enumerateNeighborlyTrees = method()
---enumerateNeighborlyTrees (ZZ) := List => (n) -> (
---computes (up to symmetry) all neighborly trees
---on n edges
---tree on n edges has n+1 vertices
---V:=toList(0..n);
---T:={};
---for E in subsets(subsets(V,2),n) do (
---    G:=graph(E);
---    if isTree(G) then (
---       if isNeighborly(G) then (
---          T=T|{G};           
---           );
---        );  
---    );
---return T;
---);
 
 --TODO: Move this method to Graphs (implement Dijkstra maybe)
 findConnectingPath = method()
