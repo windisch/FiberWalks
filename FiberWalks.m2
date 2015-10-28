@@ -19,6 +19,7 @@ export {
     --fiber graphs
     "fiber",
     "fiberGraph",
+    "scaledFiberGraph",
     "fiberDegree",
     "fiberConstant",
     "fiberDegrees",
@@ -131,6 +132,23 @@ if opts.Directed then (
       return graph(ee);
    );
 );
+
+scaledFiberGraph = method()
+scaledFiberGraph (Matrix,Matrix,List) := FiberGraph => (A,b,M) -> (
+G:=fiberGraph(A,b,M);
+V:=vertexSet G;
+for v in V do (
+    for m in M do (
+         l:=deepestDecent(v,-m);
+         u:=deepestDecent(v,m);
+         for i in 1..l do G=addEdge(G,set{v,v-i*m});
+         for i in 1..u do G=addEdge(G,set{v,v+i*m});
+       );
+    );
+return G;
+);
+
+
 
 phi = method(Options => {Verbose => false})
 phi (Matrix,Matrix,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (phi(A,convertMoves(M),N,d,opts));
@@ -381,7 +399,7 @@ return matrix P;
 scaledSimpleFiberWalk = method (Options=>{Distribution=>"uniform"})
 scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => opts -> (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M),opts));
 scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => opts -> (A,b,M) -> (
-
+--TODO: USE THE LABELS OF THE UNDERLYING GRAPH
 --TODO: remove multiples from Markov basis
 F:=fiber(A,b);
 d:=numColumns A;
