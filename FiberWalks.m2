@@ -44,6 +44,7 @@ export {
     --transistion matrices
     "simpleFiberWalk",
     "scaledSimpleFiberWalk",
+    "scaledWalkCrossPoly",
     "simpleWalk",
     "metropolisHastingsWalk",
     "slem",
@@ -57,6 +58,8 @@ export {
     "Size",
     "TermOrder",
     "Verbose",
+    "zielfunktion",
+    "hammingDistance",
     "Distribution"
 }
 
@@ -69,6 +72,19 @@ xx:=vars(23);
 
 Fiber = new Type of List
 FiberGraph = new Type of Graph
+
+
+scaledWalkCrossPoly =method()
+scaledWalkCrossPoly (ZZ,ZZ) := Matrix => (d,r) -> (
+P:=latticePoints crossPolytope(d,r);
+return P;
+
+);
+
+hammingDistance = method()
+hammingDistance (Matrix,Matrix) := ZZ => (A,B) -> (
+return sum for a in flatten entries(A-B) list if a!= 0 then 1 else 0;
+);
 
 adaptedMoves = method()
 adaptedMoves (Matrix,ZZ) := List => (M,r) -> (adaptedMoves(convertMoves(M),r));
@@ -149,6 +165,25 @@ return G;
 );
 
 
+zielfunktion = method()
+zielfunktion (List) := QQ => (S,n) -> (
+
+r:=mutableMatrix(ZZ,1,n);
+q:=mutableMatrix(ZZ,1,n);
+
+for s in S do (
+   i:=s_0;
+   j:=s_1;
+   r_(0,i)=r_(0,i)+1;
+   q_(0,j)=q_(0,j)+1;
+   );
+
+r=matrix r;
+q=matrix q;
+
+return r;
+
+);
 
 phi = method(Options => {Verbose => false})
 phi (Matrix,Matrix,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (phi(A,convertMoves(M),N,d,opts));
@@ -401,20 +436,22 @@ scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => opts -> (A,b,M) ->(sca
 scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => opts -> (A,b,M) -> (
 --TODO: USE THE LABELS OF THE UNDERLYING GRAPH
 --TODO: remove multiples from Markov basis
-F:=fiber(A,b);
+--TODO: make this function available for arbitrary polytopes
+G:=scaledFiberGraph(A,b,M);
+V:=vertexSet G;
 d:=numColumns A;
-n:=#F;
+n:=#V;
 mm:=#M;
 P:=mutableMatrix(QQ,n,n);
 for i in 0..(n-1) do (
-    v:=F_i;
+    v:=V_i;
         for m in M do (
             l:=deepestDecent(v,-m);
             u:=deepestDecent(v,m);
 
                   for j in -l..u do (
                      if j!=0 then (
-                        k:=position(F,w->w==v+j*m);
+                        k:=position(V,w->w==v+j*m);
 
                         if opts.Distribution=="uniform" then (
                            P_(i,k)=1/mm*1/(l+u+1);
