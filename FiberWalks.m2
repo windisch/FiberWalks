@@ -38,10 +38,12 @@ export {
 
     --properties
     "edgeCon",
+    "conductance",
     "phi",
     "vectorSupport",
 
     --transistion matrices
+    "heatBath",
     "simpleFiberWalk",
     "scaledSimpleFiberWalk",
     "scaledWalkCrossPoly",
@@ -58,6 +60,7 @@ export {
     "Size",
     "TermOrder",
     "Verbose",
+    "characteristicPolynomial",
     "zielfunktion",
     "hammingDistance",
     "Distribution"
@@ -73,12 +76,57 @@ xx:=vars(23);
 Fiber = new Type of List
 FiberGraph = new Type of Graph
 
+--TODO: Move to graphs package?
+conductance = method()
+conductance (Matrix) := QQ => (P) ->(
+--computes conductance if stationary distribution is uniform
+n:=numRows(P);
+c:=n;
+N:=toList(0..n-1);
+M:={};
+for i in 1..floor(n/2) do (
+    << i << endl;
+    for S in subsets(n,i) do (
+        T:=1/i*sum flatten for s in S list for t in toList(set(N)-set(S)) list P_(s,t);
+        c=min(T,c);
+        if T==c then M=S;
+        );       
+    );
+return (c,M);
+);
+
+--TODO: Move this method to a suitable package
+characteristicPolynomial = method()
+characteristicPolynomial (Matrix) := RingElement => (A) -> (
+if numRows(A)!=numColumns(A) then return false;
+R:=QQ[vars(0)];
+n:=numRows(A);
+A=substitute(A,R);
+I:=id_(R^n);
+return det(R_0*I-A);
+);
 
 scaledWalkCrossPoly =method()
 scaledWalkCrossPoly (ZZ,ZZ) := Matrix => (d,r) -> (
-P:=latticePoints crossPolytope(d,r);
-return P;
+V:=latticePoints crossPolytope(d,r);
+n:=#V;
+P:=mutableMatrix(QQ,n,n);
 
+for v in 0..(n-1) do (
+    for u in 0..(n-1) do (
+        if hammingDistance(V_v,V_u)==d-1 then (
+           k:=position(0..(d-1),i-> (V_u)_(i,0)!=(V_v)_(i,0));
+           t:=sum for i in 0..(d-1) list if i!=k then abs((V_v)_(i,0)) else 0;
+           P_(v,u)=1/d * 1/(2*(r-t)+1); 
+            
+            );
+        );
+--write diagonal entry
+      P_(v,v)=1 - sum(flatten entries P^{v});
+
+    );
+
+return matrix(P);
 );
 
 hammingDistance = method()
@@ -430,6 +478,27 @@ for i in 0..numRows(P)-1 do (
 return matrix P;
 );
 
+heatBath = method()
+heatBath (List,List) := Matrix => (F,M) -> (
+-- F: sample space
+-- M: Markov basis
+--TODO: remove multiples from Markov basis
+--TODO: allow density functions on M
+n:=#F;
+k:=#M;
+P:=mutableMatrix(QQ,n,n);
+
+for i in 0..(n-1) do (
+    for m in M do (
+      J:=for j in 0..(n-1) list if (F_i-F_j) % image(m) == 0 then j else continue;
+      for j in J do if i!=j then P_(i,j)=(1/k)*1/(#J) else continue;
+--find vertices that are adjacent to i along m
+       );
+      );
+--write rejection probabilities
+for i in 0..(n-1) do P_(i,i)=1-sum(for j in 0..(n-1) list P_(i,j));
+return matrix(P);
+);
 
 scaledSimpleFiberWalk = method (Options=>{Distribution=>"uniform"})
 scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => opts -> (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M),opts));
