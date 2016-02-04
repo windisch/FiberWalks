@@ -19,7 +19,7 @@ export {
     --fiber graphs
     "fiber",
     "fiberGraph",
-    "scaledFiberGraph",
+    "compressedFiberGraph",
     "fiberDegree",
     "fiberConstant",
     "fiberDegrees",
@@ -197,8 +197,8 @@ if opts.Directed then (
    );
 );
 
-scaledFiberGraph = method()
-scaledFiberGraph (Matrix,Matrix,List) := FiberGraph => (A,b,M) -> (
+compressedFiberGraph = method()
+compressedFiberGraph (Matrix,Matrix,List) := FiberGraph => (A,b,M) -> (
 G:=fiberGraph(A,b,M);
 V:=vertexSet G;
 for v in V do (
@@ -506,7 +506,7 @@ scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => opts -> (A,b,M) -> (
 --TODO: USE THE LABELS OF THE UNDERLYING GRAPH
 --TODO: remove multiples from Markov basis
 --TODO: make this function available for arbitrary polytopes
-G:=scaledFiberGraph(A,b,M);
+G:=compressedFiberGraph(A,b,M);
 V:=vertexSet G;
 d:=numColumns A;
 n:=#V;
