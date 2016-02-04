@@ -173,6 +173,12 @@ for v in V do (
 return G;
 );
 
+deepestDecent = method()
+deepestDecent (Matrix,Matrix) := ZZ => (v,m) -> (
+d:=numRows(v);
+return floor min for j in 0..(d-1) list if m_(j,0)<0 then -v_(j,0)/m_(j,0) else continue;
+);
+
 getHemmeckeMatrix = method ()
 getHemmeckeMatrix (ZZ) := Matrix => (k) -> (
 if k==0 then return matrix({{0}});
