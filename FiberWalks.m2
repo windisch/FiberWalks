@@ -20,50 +20,34 @@ export {
     "fiber",
     "fiberGraph",
     "compressedFiberGraph",
-    "fiberDegree",
-    "fiberConstant",
-    "fiberDegrees",
-    "fiberMoves",
-    "fiberNeighborhoods",
-    "getHemmeckeMatrix",
---    "minDegAtVertex",
     "adaptedMoves",
     "convertMoves",
-    "deepestDecent",
-    "hypergeometric",
-    "moveGraph",
     "findConnectingPath",
     "countEdgeDisjointPaths",
-    "enumerateNeighborlyTrees",
+    "characteristicPolynomial",
+    "hammingDistance",
+    "getHemmeckeMatrix",
 
     --properties
-    "edgeCon",
     "conductance",
-    "phi",
     "vectorSupport",
 
     --transistion matrices
-    "heatBath",
     "simpleFiberWalk",
-    "scaledSimpleFiberWalk",
-    "scaledWalkCrossPoly",
     "simpleWalk",
     "metropolisHastingsWalk",
+    "heatBath",
     "slem",
     "mixingTime",
 
     --options
     "Directed",
-    "fiberNeighborhood",
     "ReturnSet",
+    "Distribution",
     "Stationary",
     "Size",
     "TermOrder",
-    "Verbose",
-    "characteristicPolynomial",
-    "zielfunktion",
-    "hammingDistance",
-    "Distribution"
+    "Verbose"
 }
 
 --variable for polynomial ring
@@ -104,29 +88,6 @@ n:=numRows(A);
 A=substitute(A,R);
 I:=id_(R^n);
 return det(R_0*I-A);
-);
-
-scaledWalkCrossPoly =method()
-scaledWalkCrossPoly (ZZ,ZZ) := Matrix => (d,r) -> (
-V:=latticePoints crossPolytope(d,r);
-n:=#V;
-P:=mutableMatrix(QQ,n,n);
-
-for v in 0..(n-1) do (
-    for u in 0..(n-1) do (
-        if hammingDistance(V_v,V_u)==d-1 then (
-           k:=position(0..(d-1),i-> (V_u)_(i,0)!=(V_v)_(i,0));
-           t:=sum for i in 0..(d-1) list if i!=k then abs((V_v)_(i,0)) else 0;
-           P_(v,u)=1/d * 1/(2*(r-t)+1); 
-            
-            );
-        );
---write diagonal entry
-      P_(v,v)=1 - sum(flatten entries P^{v});
-
-    );
-
-return matrix(P);
 );
 
 hammingDistance = method()
@@ -212,183 +173,6 @@ for v in V do (
 return G;
 );
 
-
-zielfunktion = method()
-zielfunktion (List) := QQ => (S,n) -> (
-
-r:=mutableMatrix(ZZ,1,n);
-q:=mutableMatrix(ZZ,1,n);
-
-for s in S do (
-   i:=s_0;
-   j:=s_1;
-   r_(0,i)=r_(0,i)+1;
-   q_(0,j)=q_(0,j)+1;
-   );
-
-r=matrix r;
-q=matrix q;
-
-return r;
-
-);
-
-phi = method(Options => {Verbose => false})
-phi (Matrix,Matrix,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (phi(A,convertMoves(M),N,d,opts));
-phi (Matrix,List,List,ZZ) := ZZ => opts -> (A,M,N,d) -> (
---computes phi_M(d)
---return min for G in N list if #G>= d then edgeCon(A,M,G) else continue;
-k:={};
-nN:=for G in N list if #G>=d then G else continue;
-if opts.Verbose then (
-   num:=nN;
-   i:=1;
-   );
-for G in nN do (
-    k=k|{edgeCon(A,M,G)}; 
-    if opts.Verbose then (
-       << i << "/" << num <<endl; 
-       i=i+1;
-        );
-    );
-return min k;
-);
-
---TODO: remove dependence from A
-edgeCon = method(Options => {Verbose => false})
-edgeCon (Matrix,Matrix,Matrix) := ZZ => opts -> (A,M,G) -> (edgeCon(A,convertMoves(M),convertMoves(G),opts));
-edgeCon (Matrix,Matrix,List) := ZZ => opts -> (A,M,G) -> (edgeCon(A,convertMoves(M),G,opts));
-edgeCon (Matrix,List,Matrix) := ZZ => opts -> (A,M,G) -> (edgeCon(A,M,convertMoves(G),opts));
-edgeCon (Matrix,List,List) := ZZ => opts -> (A,M,G) -> (
---computes kappa_M(G)
-if opts.Verbose then (<< "Compute move graph";);
-F:=moveGraph(A,M,G);
-if opts.Verbose then (<< "...done" <<endl;);
-k:={};
-if opts.Verbose then (
-    n:=#G;
-    i:=1;
-    );
-Z:=matrix toList(numColumns(A):{0});
---return max for g in G list countEdgeDisjointPaths(F,Z,g);
-if opts.Verbose then (<< "Count edge-disjoint paths" << endl;);
-for g in G do (
-    if opts.Verbose then (
-        << i << "/" << n << endl;
-        i=i+1;
-        );
-    k=k|{countEdgeDisjointPaths(F,Z,g)}; 
-    );
-return min k;
-);
-
-
-fiberDegree = method ()
-fiberDegree (Matrix,Matrix) := ZZ => (M,G) -> (fiberDegree(convertMoves(M),convertMoves(G)));
-fiberDegree (Matrix,List) := ZZ => (M,G) -> (fiberDegree(convertMoves(M),G));
-fiberDegree (List,Matrix) := ZZ => (M,G) -> (fiberDegree(M,convertMoves(G)));
-fiberDegree (List,List) := ZZ => (M,G) -> (
-d:=numRows first M;
---make M symmetric
-M=unique(-M|M);
---construct N(G)
-N:=mutableMatrix(ZZ,d,1);
-for i in 0..(d-1) do (
-   N_(i,0)=- max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
-	);
-N=matrix N;
---compute fiber degree
-fD:=0;
-for m in M do (
---check whether m>= N
-    if any(apply(flatten entries (m-N),i -> i <0),j->j===true)===false then fD=fD+1;
-    );
-return fD;
-);
-
-fiberConstant = method()
-fiberConstant (Matrix) := Matrix => (G) -> (fiberConstant(convertMoves(G)));
-fiberConstant (List) := Matrix => (G) -> (
-d:=numRows first G;
-N:=mutableMatrix(ZZ,d,1);
-for i in 0..(d-1) do (
-   N_(i,0)=- max for g in G list if(g_(i,0)<0) then -g_(i,0) else 0;
-	);
-return matrix N;
-);
-
-fiberDegrees = method (Options => {fiberNeighborhood => {}})
-fiberDegrees (Matrix) := ZZ => opts -> (M) -> (fiberDegrees(convertMoves(M),opts));
-fiberDegrees (List) := ZZ => opts -> (M) -> (
---returns all possible fiber degrees
-fN:=opts.fiberNeighborhood;
---compute fiberNeighborhood if not provided in the arguments
-if #fN==0 then (
-   fN=fiberNeighborhoods(M);   
-    );
-return sort unique for G in fN list #G;
-);
-
---minDegAtVertex = method();
---minDegAtVertex (Matrix,Matrix,List) := Boolean => (A,b,M) -> (
---F:=fiber(A,b);
---V:=for v in entries transpose vertices convexHull F list transpose lift(matrix({v}),ZZ);
---G:=fiberGraph(F,M);
---
---return minimalDegree G===min for v in V list degree(G,v)
-----);
-
-fiberMoves = method();
-fiberMoves (Matrix,Matrix) := List => (M,N) -> (fiberMoves(convertMoves(M),N))
-fiberMoves (List,Matrix) := List => (M,N) -> (
---make M symmetric
-M=unique(-M|M);
-return for g in M list if all(flatten entries(g+N),i-> i>=0) then g else continue;    
-);
-
-fiberNeighborhoods = method (Options => {Verbose =>false,Size=>-1})
-fiberNeighborhoods (Matrix) := List => opts -> (M) -> (fiberNeighborhoods(convertMoves(M),opts));
-fiberNeighborhoods (List) := List => opts -> (M) -> (
---make M symmetric
-M=unique(-M|M);
-fN:={{}};
---counter
---subsets to consider
-P:={};
-if opts.Size == -1 then (
-    P=subsets(M);
-    ) else (
---restrict computation on fixed i and delete P from memory afterwards
-    P=subsets(M,opts.Size);
-    );
-
-if opts.Verbose then (
-    num:=#P;
-    i:=0;
-    );
-
-for MM in P do (
-   if opts.Verbose then (
-       if opts.Size !=-1 then (
-           << opts.Size << ":" << "\t";
-           );
-      << i << "/" << num << endl; 
-      i=i+1;
-      );
-   if #MM>0 then (
-      if fiberDegree(M,MM) == #MM then fN=fN|{MM};       
-       ); 
-    );
-return fN;
-);
-
-vectorSupport = method()
-vectorSupport (Matrix) := List => (A) -> (
-d:=numColumns(A);
-r:=numRows(A);
-return flatten for i in 0..(r-1) list for j in 0..(d-1) list if A_(i,j)!=0 then (i,j) else continue;
-);
-
 getHemmeckeMatrix = method ()
 getHemmeckeMatrix (ZZ) := Matrix => (k) -> (
 if k==0 then return matrix({{0}});
@@ -399,33 +183,6 @@ o:=matrix toList(k:{0});
 ll:=matrix({toList((4*k):0)|{1,1}});
 A:=(I|I|O|O|i|o)||(O|O|I|I|o|i)||ll;
 return A;
-);
-
-moveGraph = method ()
-moveGraph (Matrix,Matrix) := FiberGraph => (M,G) -> (moveGraph(convertMoves(M),convertMoves(G)));
-moveGraph (List,List) := FiberGraph => (M,G) -> (
-
-o:=matrix toList(numRows(first G):{0});
-fC:=fiberConstant(G);
-
---enumerate vertices
-V:={};
-tC:={o};
-
-while(#tC>0) do (
-    v:=first tC;
-    tC=delete(v,tC);
-    for g in M do (
-       vnew:=v+g;
-       if all(flatten entries(vnew-fC),i-> i>=0) === true then (
-            if member(vnew,V) === false then (
-               V=V|{vnew}; 
-               tC=unique(tC|{vnew});
-               );
-            );
-        );
-    );
-return fiberGraph(V,M); 
 );
 
 convertMoves = method()
@@ -498,62 +255,6 @@ for i in 0..(n-1) do (
 --write rejection probabilities
 for i in 0..(n-1) do P_(i,i)=1-sum(for j in 0..(n-1) list P_(i,j));
 return matrix(P);
-);
-
-scaledSimpleFiberWalk = method (Options=>{Distribution=>"uniform"})
-scaledSimpleFiberWalk (Matrix,Matrix,Matrix) := Matrix => opts -> (A,b,M) ->(scaledSimpleFiberWalk(A,b,convertMoves(M),opts));
-scaledSimpleFiberWalk (Matrix,Matrix,List) := Matrix => opts -> (A,b,M) -> (
---TODO: USE THE LABELS OF THE UNDERLYING GRAPH
---TODO: remove multiples from Markov basis
---TODO: make this function available for arbitrary polytopes
-G:=compressedFiberGraph(A,b,M);
-V:=vertexSet G;
-d:=numColumns A;
-n:=#V;
-mm:=#M;
-P:=mutableMatrix(QQ,n,n);
-for i in 0..(n-1) do (
-    v:=V_i;
-        for m in M do (
-            l:=deepestDecent(v,-m);
-            u:=deepestDecent(v,m);
-
-                  for j in -l..u do (
-                     if j!=0 then (
-                        k:=position(V,w->w==v+j*m);
-
-                        if opts.Distribution=="uniform" then (
-                           P_(i,k)=1/mm*1/(l+u+1);
-                           );
-                        if opts.Distribution=="binomial" then (
-                           P_(i,k)=binomial(l+u,l+j)*(0.5)^(l+j); 
-                           );
-                        );
-                     );
-
-        );
-       P_(i,i)=1-sum flatten entries P^{i};
-);
-return matrix P;
-);
-
-deepestDecent = method()
-deepestDecent (Matrix,Matrix) := ZZ => (v,m) -> (
-d:=numRows(v);
-return floor min for j in 0..(d-1) list if m_(j,0)<0 then -v_(j,0)/m_(j,0) else continue;
-);
-
-hypergeometric = method()
-hypergeometric (Matrix) := RR => (v) -> (
-return  numeric(sum flatten entries v)!/(product for vv in flatten entries v list vv!)
-);
-hypergeometric (List) := HashTable => (F) -> (
---This returns the conditional hypergeometric distribution (which
---does not depend on parameters)
---all elements in F must have the same norm
-p:=apply(F,f->{f,hypergeometric(f)});
-c:=sum for f in p list f_1;
-return apply(p, f-> {f_0,f_1/c});
 );
 
 simpleWalk = method()
