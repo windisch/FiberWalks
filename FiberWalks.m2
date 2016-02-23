@@ -154,7 +154,7 @@ if opts.Directed then (
          ee=ee|{e}; 
          );
       ); 
-      return graph(ee);
+      return graph(F,ee);
    );
 );
 
