@@ -40,6 +40,9 @@ export {
     "slem",
     "mixingTime",
 
+    --miscellaneous
+    "linearSpan",
+
     --options
     "Directed",
     "ReturnSet",
@@ -223,6 +226,12 @@ while #P > 0 do (
     );
 return n;
 );
+
+linearSpan = method ()
+linearSpan (List) := Module => (L) -> (
+return image transpose matrix apply(L,l->flatten entries l);
+);
+
 
 ----------------------------------
 ---- TRANSITION MATRICES  --------
