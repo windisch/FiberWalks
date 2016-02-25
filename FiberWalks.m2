@@ -1,6 +1,6 @@
 newPackage("FiberWalks",
-	Version => "0.1",
-	Date => "May 2015",
+	Version => "0.2",
+	Date => "Februar 2016",
 	Authors => {
      {Name => "Tobias Windisch",
       Email => "windisch@ovgu.de",
