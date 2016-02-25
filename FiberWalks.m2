@@ -242,6 +242,7 @@ return matrix P;
 );
 
 heatBath = method()
+heatBath (Polyhedron,List) := Matrix => (P,M) -> (heatBath(latticePoints P,M))
 heatBath (List,List) := Matrix => (F,M) -> (
 -- F: sample space
 -- M: Markov basis
