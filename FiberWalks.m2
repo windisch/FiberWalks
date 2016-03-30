@@ -39,6 +39,7 @@ export {
     "heatBath",
     "slem",
     "mixingTime",
+    "approxFiberMixing",
 
     --miscellaneous
     "linearSpan",
@@ -319,6 +320,35 @@ return matrix P;
 slem = method()
 slem (Matrix) := RR => (P) -> ( 
 return (rsort unique for v in eigenvalues P list abs v)_1;
+);
+
+approxFiberMixing = method()
+approxFiberMixing (Matrix,Matrix,List) := ZZ => (A,u,M) -> (
+--count the fiber
+n:=#fiber(A,A*u);
+--make moves symmetric
+M=toList(set(M)+set(-M));
+nM:=#M;
+--observed tables
+T:=new MutableHashTable;
+--set counter
+i:=1;
+
+while true do (
+--keep track of tables
+    if T#?u then T#u=T#u+1 else T#u=1; 
+--compute distance to uniform distribution
+e:=1/2*(sum for v in values(T) list abs(v/i-1/n))+1/2*(n-#values(T))/n;
+if e<1/4 then return i;
+
+--get proposal
+    m:=M_(random(1,nM)-1);     
+    if all(flatten entries(u+m),k -> k>=0) then (
+        u=u+m;
+        );
+
+    i=i+1;
+    );
 );
 
 mixingTime = method()
