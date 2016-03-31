@@ -501,6 +501,27 @@ document {
           }}
 
 document {
+     Key => {approxFiberMixing,
+     (approxFiberMixing,Matrix,Matrix,List)},
+     Headline => "Mixing time of fiber walks",
+     Usage => "approxFiberMixing(A,u,M)",
+     Inputs => {
+          "A" => { "a Matrix"},
+          "u" => { "a Matrix"},
+          "M" => { "a List"}},
+     Outputs => {
+          {"the number of steps needed to get a sample from the fiber with
+          respect to a probability density function that has total variance
+          distance to the uniform distribution at most 1/4"} },
+     EXAMPLE {
+          "A=matrix({{1,1,1,1}})",
+          "b=matrix({{2}})",
+          "M=toricMarkov(A)",
+          "simpleFiberWalk(A,b,M)"
+          },
+     SeeAlso => {mixingTime}}
+
+document {
      Key => {mixingTime,
      (mixingTime,Matrix)},
      Headline => "Mixing time",
