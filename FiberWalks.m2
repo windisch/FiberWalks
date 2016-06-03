@@ -31,7 +31,6 @@ export {
 
     --properties
     "conductance",
-    "vectorSupport",
 
     --transistion matrices
     "simpleFiberWalk",
