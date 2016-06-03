@@ -22,6 +22,7 @@ export {
     "compressedFiberGraph",
     "adaptedMoves",
     "convertMoves",
+    "areIsomorphic",
     "findConnectingPath",
     "countEdgeDisjointPaths",
     "characteristicPolynomial",
@@ -129,6 +130,13 @@ LP:=latticePoints P;
 return LP;
 );
 
+areIsomorphic = method()
+areIsomorphic (Graph,Graph) => Boolean -> (G,H) -> (
+
+return false;
+
+);
+
 fiberGraph = method (Options => {Directed => false,TermOrder=>Lex})
 fiberGraph (Matrix,Matrix,Matrix) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(A,b,convertMoves(M),opts));
 fiberGraph (Matrix,Matrix,List) := FiberGraph => opts -> (A,b,M) -> (fiberGraph(fiber(A,b),M,opts));
@@ -176,6 +184,8 @@ for v in V do (
     );
 return G;
 );
+
+
 
 deepestDecent = method()
 deepestDecent (Matrix,Matrix) := ZZ => (v,m) -> (
