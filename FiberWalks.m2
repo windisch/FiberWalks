@@ -32,6 +32,7 @@ export {
     --properties
     "conductance",
     "vectorSupport",
+    "fiberDimensionOne",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -82,6 +83,25 @@ for i in 1..floor(n/2) do (
         );       
     );
 return (c,M);
+);
+
+fiberDimensionOne = method()
+fiberDimensionOne (Graph) := Boolean => (G) -> (
+n:=#(vertexSet(G));
+F:=toList(1..n);
+S:=toList(1..n-1);
+for M in subsets S do(
+      div:=0;
+      for a in subsets(M,2) do(
+      	    i:=max(a);
+	    j:=min(a);
+	    if gcd(i,j)==j then div=1;
+      );
+      if div==0 then(
+      	 if areIsomorphic(G,fiberGraph(F,M)) then return true;
+	 );
+);
+return false;
 );
 
 --TODO: Move this method to a suitable package
