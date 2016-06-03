@@ -102,6 +102,32 @@ for M in subsets S do(
 );
 return false;
 );
+fiberDimensionOne (List) := Boolean => (degs) -> (
+--n:=#(vertexSet(G));
+n:=#degs;
+F:=toList(1..n);
+S:=toList(1..n-1);
+for M in subsets S do(
+      div:=0;
+      for a in subsets(M,2) do(
+      	    i:=max(a);
+	    j:=min(a);
+	    if gcd(i,j)==j then div=1;
+      );
+      if div==0 then(
+      H:=fiberGraph(F,M);
+      if isConnected(H) then (
+            D:=sort for v in vertexSet(H) list degree(H,v);
+            if D==degs then (
+               print M;
+               );
+       );
+
+	 );
+);
+return false;
+);
+
 
 --TODO: Move this method to a suitable package
 characteristicPolynomial = method()
