@@ -131,7 +131,15 @@ return LP;
 );
 
 areIsomorphic = method()
-areIsomorphic (Graph,Graph) => Boolean -> (G,H) -> (
+areIsomorphic (Graph,Graph) := Boolean => (G,H) -> (
+AG:=adjacencyMatrix(G);
+AH:=adjacencyMatrix(H);
+n:=#(vertexSet(G));
+
+for P in permutations toList(0..(n-1)) do (
+--relabeling G
+   if (AG_P)^P==AH then return true
+    );
 
 return false;
 
