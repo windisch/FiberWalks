@@ -151,7 +151,7 @@ return LP;
 );
 
 areIsomorphic = method()
-areIsomorphic (Graph,Graph) => Boolean -> (G,H) -> (
+areIsomorphic (Graph,Graph) := Boolean -> (G,H) -> (
 
 return false;
 
