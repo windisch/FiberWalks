@@ -28,10 +28,12 @@ export {
     "characteristicPolynomial",
     "hammingDistance",
     "getHemmeckeMatrix",
+    "listDegSequences",
 
     --properties
     "conductance",
     "fiberDimensionOne",
+    "isSetOfDirections",
 
     --transistion matrices
     "simpleFiberWalk",
@@ -44,6 +46,7 @@ export {
 
     --miscellaneous
     "linearSpan",
+    "isMultiple",
 
     --options
     "Directed",
@@ -84,6 +87,30 @@ for i in 1..floor(n/2) do (
 return (c,M);
 );
 
+isSetOfDirections = method()
+isSetOfDirections (List) := Boolean => (M) -> (
+--checks whether a set of moves is a set of directions
+for a in subsets(M,2) do(
+    if isMultiple(a_0,a_1) then return false
+    );
+return true;
+);
+
+isMultiple = method()
+isMultiple (ZZ,ZZ) := Boolean => (u,v) -> (isMultiple(matrix({{u}}),matrix({{v}})))
+isMultiple (Matrix,Matrix) := Boolean => (u,v) -> (
+--checks whether there is an integer k such that u=kv or v=ku
+A:=u|v;
+if dim(kernel A)==1 then (
+   s:=(syz(u|v))_0;
+   i:=abs(s_0);
+   j:=abs(s_1);
+   if gcd(i,j)==min(i,j) then return true;
+   );
+return false;
+
+);
+
 fiberDimensionOne = method()
 fiberDimensionOne (Graph) := Boolean => (G) -> (
 n:=#(vertexSet(G));
@@ -92,7 +119,7 @@ S:=toList(1..n-1);
 for M in subsets S do(
       div:=0;
       for a in subsets(M,2) do(
-      	    i:=max(a);
+       i:=max(a);
 	    j:=min(a);
 	    if gcd(i,j)==j then div=1;
       );
@@ -107,25 +134,33 @@ fiberDimensionOne (List) := Boolean => (degs) -> (
 n:=#degs;
 F:=toList(1..n);
 S:=toList(1..n-1);
-for M in subsets S do(
-      div:=0;
-      for a in subsets(M,2) do(
-      	    i:=max(a);
-	    j:=min(a);
-	    if gcd(i,j)==j then div=1;
-      );
-      if div==0 then(
+for M in subsets S do (
+      if isSetOfDirections(M) then (
       H:=fiberGraph(F,M);
       if isConnected(H) then (
             D:=sort for v in vertexSet(H) list degree(H,v);
             if D==degs then (
-               print M;
+               print D;
                );
        );
 
 	 );
 );
 return false;
+);
+
+listDegSequences = method()
+listDegSequences (ZZ) := List => (n) -> (
+S:=toList(1..n-1);
+F:=toList(1..n);
+D:={};
+for M in subsets S do (
+    if isSetOfDirections(M) then (
+      H:=fiberGraph(F,M);
+      D=D|{sort for v in vertexSet(H) list degree(H,v)};
+      );
+    );
+return unique D;
 );
 
 
