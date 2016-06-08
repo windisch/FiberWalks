@@ -212,18 +212,13 @@ return LP;
 
 areIsomorphic = method()
 areIsomorphic (Graph,Graph) := Boolean => (G,H) -> (
-
 H=indexLabelGraph(reindexBy(H,"mindegree"));
 G=indexLabelGraph(reindexBy(G,"mindegree"));
-
 dH:=for v in vertexSet(H) list degree(H,v);
 dG:=for v in vertexSet(G) list degree(G,v);
-
 if dH!=dG then return false;
-
 d:=dH;
 PP:={};
-
 for j in min(d)..max(d) do (
    P:=for i in 0..(#d-1) list if d_i==j then i else continue;
    if #P>0 then PP=PP|{P};
