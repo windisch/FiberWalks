@@ -212,13 +212,43 @@ return LP;
 
 areIsomorphic = method()
 areIsomorphic (Graph,Graph) := Boolean => (G,H) -> (
+
+H=indexLabelGraph(reindexBy(H,"mindegree"));
+G=indexLabelGraph(reindexBy(G,"mindegree"));
+
+dH:=for v in vertexSet(H) list degree(H,v);
+dG:=for v in vertexSet(G) list degree(G,v);
+
+if dH!=dG then return false;
+
+d:=dH;
+PP:={};
+
+for j in min(d)..max(d) do (
+   P:=for i in 0..(#d-1) list if d_i==j then i else continue;
+   if #P>0 then PP=PP|{P};
+);
+
+PP=apply(PP,permutations);
+--create index set
+I:=for P in PP list set(0..(#P-1));
+
+if #I>1 then (
+    IS:=I_0;
+    for i in 1..(#I-1) do (
+         IS=(IS**I_i)/splice;
+         );
+    ) else (
+    IS={I_0};
+    );
+
+IS=toList(IS);
 AG:=adjacencyMatrix(G);
 AH:=adjacencyMatrix(H);
-n:=#(vertexSet(G));
-for P in permutations toList(0..(n-1)) do (
---relabeling G
-   if (AG_P)^P==AH then return true
-    );
+for jj in IS do (
+    P:=flatten for j in 0..(#PP-1) list (PP_j)_(jj_j);
+    if (AG_P)^P==AH then return true
+   );
 return false;
 );
 
@@ -665,12 +695,6 @@ assert(all(L,S->S==F));
 ///
 
 TEST ///
---check infinite fibers 
-A=matrix({{1,-1}});
-assert(fiber(A,1)===false);
-///
-
-TEST ///
 --check conversion of moves
 M=matrix({{1,-1,0},{1,0,-1}});
 MM={matrix({{1},{-1},{0}}),matrix({{1},{0},{-1}})};
@@ -679,7 +703,12 @@ assert(convertMoves(M)===MM);
 
 TEST /// 
 G=graph({{1,2},{2,3},{1,3},{3,4},{3,5},{4,6},{5,6}});
-assert(countEdgeDisjointPaths(G)===2);
+assert(countEdgeDisjointPaths(G,1,6)===2);
+///
+
+TEST /// 
+assert(areIsomorphic(completeGraph(3),cycleGraph(3))===true);
+assert(areIsomorphic(completeGraph(4),cycleGraph(3))===false);
 ///
 
 
