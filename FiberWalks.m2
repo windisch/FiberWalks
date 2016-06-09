@@ -47,6 +47,7 @@ export {
     --miscellaneous
     "linearSpan",
     "isMultiple",
+    "enumFiberDimOne",
 
     --options
     "Directed",
@@ -210,13 +211,29 @@ LP:=latticePoints P;
 return LP;
 );
 
+enumFiberDimOne = method()
+enumFiberDimOne (ZZ) := List => (n) -> (
+F:=toList(1..n);
+D:=toList(1..(n-1));
+GG:=for M in subsets(D) list if isSetOfDirections(M) then fiberGraph(F,M) else continue;
+
+IG:={};
+for G in GG do (
+    c:=sum for H in IG list if areIsomorphic(G,H) then 1 else 0;
+    if c==0 then IG=IG|{G};
+    );
+return IG;
+);
+
 areIsomorphic = method()
 areIsomorphic (Graph,Graph) := Boolean => (G,H) -> (
 H=indexLabelGraph(reindexBy(H,"mindegree"));
 G=indexLabelGraph(reindexBy(G,"mindegree"));
 dH:=for v in vertexSet(H) list degree(H,v);
 dG:=for v in vertexSet(G) list degree(G,v);
+--easy checks
 if dH!=dG then return false;
+if not isConnected(G)===isConnected(H) then return false;
 d:=dH;
 PP:={};
 for j in min(d)..max(d) do (
