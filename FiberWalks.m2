@@ -47,6 +47,7 @@ export {
     --miscellaneous
     "linearSpan",
     "isMultiple",
+    "enumDimensionFiberDimOne",
     "enumFiberDimOne",
 
     --options
@@ -209,6 +210,12 @@ o:=matrix toList(d:{0});
 P:=intersection(I,o,A,b);
 LP:=latticePoints P;
 return LP;
+);
+
+enumDimensionFiberDimOne = method()
+enumDimensionFiberDimOne ZZ := List => (n) -> (
+L:= for G in enumFiberDimOne(n) list transpose matrix({for v in vertexSet(G) list degree(G,v)});
+return L;
 );
 
 enumFiberDimOne = method()
